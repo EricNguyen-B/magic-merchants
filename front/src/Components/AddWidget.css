@@ -1,0 +1,16 @@
+#widget-form label {
+    display: block;
+    margin: 1rem 0;
+}
+
+#widget-form input,
+#widget-form select,
+#widget-form textarea {
+    margin: 0 1rem;
+}
+
+#widget-form .error-message {
+    color: red;
+    margin: 1rem 0;
+    font-family: "Courier New", Courier, monospace;
+}
