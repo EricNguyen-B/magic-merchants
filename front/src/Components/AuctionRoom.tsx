@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { getAxiosErrorMessages, Widget } from "./utils";
+import Button from '@mui/material/Button';
 
 function AuctionRoom() {
     return (
-        <>
-            <h2>Please click button to add an auction room</h2>
-        </>
+        <Button variant="contained">Add Auction Room</Button>
     );
 }
 
