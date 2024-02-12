@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Button from '@mui/material/Button';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 
-function AuctionRoom() {
+const AuctionRoom = () => {
+    let { auctionId } = useParams(); 
+
     return (
-        <Button variant="contained">Add Auction Room</Button>
+        <h1>Auction Room {auctionId}</h1>
     );
 }
 
