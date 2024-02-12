@@ -3,6 +3,7 @@ import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import moment from "moment";
+import { uuid } from 'uuidv4';
 
 // https://www.npmjs.com/package/sqlite
 // https://github.com/colinhacks/zod
@@ -18,11 +19,15 @@ let app = express();
 app.use(express.json({ limit: "1kb" }));
 
 app.post("/api/add-auction", async (req, res) => {
-    // TODO: create a proper unique ID. For now, we generate a simple unique ID by Date
-    const newAuctionId = Date.now().toString(); 
-    // TODO: Save to the database after
-    res.json({ id: newAuctionId });
-});
+    try {
+        const newAuctionId = uuid();
+        await db.run('INSERT INTO auction_room (id) VALUES (?)', newAuctionId);
+        res.json({ id: newAuctionId });
+    } catch (error) {
+      console.error("Failed to add auction room:", error);
+      res.status(500).json({ error: "Failed to add auction room" });
+    }
+  });
 
 let port = 3000;
 let host = "localhost";

@@ -1,6 +1,7 @@
 import express from "express";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import { uuid } from 'uuidv4';
 // https://www.npmjs.com/package/sqlite
 // https://github.com/colinhacks/zod
 // https://momentjs.com/guides/#/parsing/strict-mode/
@@ -12,10 +13,15 @@ let db = await open({
 let app = express();
 app.use(express.json({ limit: "1kb" }));
 app.post("/api/add-auction", async (req, res) => {
-    // For simplicity, generate a simple unique ID, in a real app you would insert into the database
-    const newAuctionId = Date.now().toString(); // Example ID generation
-    // You would save to the database here
-    res.json({ id: newAuctionId });
+    try {
+        const newAuctionId = uuid();
+        await db.run('INSERT INTO auction_room (id) VALUES (?)', newAuctionId);
+        res.json({ id: newAuctionId });
+    }
+    catch (error) {
+        console.error("Failed to add auction room:", error);
+        res.status(500).json({ error: "Failed to add auction room" });
+    }
 });
 let port = 3000;
 let host = "localhost";
