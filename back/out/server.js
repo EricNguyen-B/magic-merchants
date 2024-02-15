@@ -12,8 +12,20 @@ let db = await open({
 });
 let app = express();
 app.use(express.json({ limit: "1kb" }));
+app.get("/api/check-active-rooms", async (req, res) => {
+    let result;
+    try {
+        result = await db.all("SELECT * FROM auction_room");
+        res.json(result);
+    }
+    catch (error) {
+        console.error("Failed to check for all auction rooms", error);
+        res.status(500).json({ error: "Failed to check active auction rooms" });
+    }
+});
 app.post("/api/add-auction", async (req, res) => {
     try {
+        console.log("added auction");
         const newAuctionId = uuid();
         await db.run('INSERT INTO auction_room (id) VALUES (?)', newAuctionId);
         res.json({ id: newAuctionId });
@@ -21,6 +33,19 @@ app.post("/api/add-auction", async (req, res) => {
     catch (error) {
         console.error("Failed to add auction room:", error);
         res.status(500).json({ error: "Failed to add auction room" });
+    }
+});
+// TO DO: resolve issue not being able to filter select from the DB to display bid history table successfully
+app.get("/api/check-bid-history/:auctionId", async (req, res) => {
+    let result;
+    try {
+        const { auctionId } = req.params;
+        result = await db.all("SELECT * FROM auction_room");
+        res.json(result);
+    }
+    catch (error) {
+        console.error("Failed to check bid history with auction ID", error);
+        res.status(500).json({ error: "Failed to check bid history" });
     }
 });
 let port = 3000;
