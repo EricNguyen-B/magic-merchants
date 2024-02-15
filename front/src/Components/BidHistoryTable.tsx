@@ -7,6 +7,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import axios from 'axios';
+import {io} from 'socket.io-client';
+
 
 type Bid = {
     auctionId: string,
@@ -18,14 +20,20 @@ interface BidHistoryTableProps {
 
 const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
+  
 
   const checkBidHistory = async () => {
     const response = await axios.get(`/api/check-bid-history/${auctionId}`);
+    console.log(response.data)
     setHistoricalBids(response.data);
+  }
+  const createBid = () => {
+    //socket.emit();
   }
 
   useEffect(() => {
     checkBidHistory();
+    const socket = io("http://localhost:3000"); //Connect to server
   }, [auctionId]); 
   
   return (

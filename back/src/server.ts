@@ -2,21 +2,35 @@ import express, { application, Response } from "express";
 import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import moment from "moment";
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
 
-// https://www.npmjs.com/package/sqlite
-// https://github.com/colinhacks/zod
-// https://momentjs.com/guides/#/parsing/strict-mode/
+const port = 3000;
+const host = "localhost";
+const protocol = "http";
 
 sqlite3.verbose(); // enable better error messages
-let db = await open({
+const db = await open({
     filename: "../database.db",
     driver: sqlite3.Database,
 });
 
-let app = express();
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173", // Frontend URL
+      methods: ["GET", "POST"]
+  }
+});
+app.use(cors());
 app.use(express.json({ limit: "1kb" }));
+
+io.on("connection", (socket) => { //Listen to connection events
+  console.log(`User Connected: ${socket.id}`);
+})
 
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
 app.get("/api/check-active-rooms", async (req, res) => {
@@ -56,9 +70,6 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
   }
 });
 
-let port = 3000;
-let host = "localhost";
-let protocol = "http";
-app.listen(port, host, () => {
-    console.log(`${protocol}://${host}:${port}`);
+server.listen(port, () => {
+  console.log(`${protocol}://${host}:${port}`);
 });

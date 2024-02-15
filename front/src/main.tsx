@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import RoomsPage from "./components/pages/RoomsPage";
-import AuctionRoom from './components/AuctionRoom';
+import RoomsPage from "./Components/pages/RoomsPage";
+import AuctionRoom from './Components/AuctionRoom';
 
 let router = createBrowserRouter([
     {
