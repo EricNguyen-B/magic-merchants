@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import RoomsPage from './components/RoomsPage';
+import RoomsPage from "./components/pages/RoomsPage";
 import AuctionRoom from './components/AuctionRoom';
 
 let router = createBrowserRouter([
@@ -11,7 +11,7 @@ let router = createBrowserRouter([
         element: <RoomsPage />
     },
     {
-        path: "/auctions/:auctionId",
+        path: "/auction-room/:auctionId",
         element: <AuctionRoom />
     },
 ]);
