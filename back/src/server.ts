@@ -4,7 +4,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
 import http from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import cors from "cors";
 
 const port = 3000;
@@ -28,23 +28,34 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 
+/**Websocket Event Handlers**/
+async function handleSendBidEvent(data:any, socket: Socket) {
+  try{
+    const {price, auction_id} = data;
+    const newBidId = uuid();
+    await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+    socket.to(auction_id).emit("recieve_bid", data);
+  }catch(error){
+    console.log("Failed to send bid");
+  }
+}
+async function handleJoinRoomEvent(data: any, socket: Socket) {
+  try {
+    const {auction_id} = data;
+    socket.join(auction_id);
+    console.log(`User ${socket.id} joined Room: ${auction_id}`);
+  } catch (error) {
+    console.log("Failed to join room");
+  }
+}
+
 io.on("connection", (socket) => { //Listen to connection events
   console.log(`User Connected: ${socket.id}`);
-  socket.on("send_bid", async (data) => {
-    console.log(`User ${socket.id} placed a bid:  ${data}`);
-    //Store bid into table
-    try{
-      const {price, auction_id} = data;
-      const newBidId = uuid();
-     
-      await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
-      const result = await db.all('SELECT * FROM user_bid');
-      console.log(result);
-      
-    }catch(error){
-      console.log("Bid failed");
-    }
-    socket.broadcast.emit("recieve_bid", data);
+  socket.on("join_room", (data) => {
+    handleJoinRoomEvent(data, socket);
+  })
+  socket.on("send_bid", (data) => {
+    handleSendBidEvent(data, socket);
   })
 
 })

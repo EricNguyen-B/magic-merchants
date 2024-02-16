@@ -26,6 +26,7 @@ interface BidHistoryTableProps {
 const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
   const [bidPrice, setBidPrice] = useState<string>("");
+  const [refresh, setRefresh] = useState("");
 
   const checkBidHistory = async () => {
     const response = await axios.get(`/api/check-bid-history/${auctionId}`);
@@ -33,16 +34,20 @@ const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
     setHistoricalBids(response.data);
   }
   const handleSubmitBid = () => {
-    console.log(parseInt(bidPrice), auctionId);
+    // console.log(parseInt(bidPrice), auctionId);
     socket.emit("send_bid", {price: parseInt(bidPrice), auction_id: auctionId});
   }
-
+  /**Join Room of Auction ID**/
+  useEffect(() => {
+    socket.emit("join_room", {auction_id: auctionId});
+  }, [])
+  /**Join Room of Auction ID**/
   useEffect(() => {
     socket.on("recieve_bid", (data) => {
       console.log(data);
     })
     checkBidHistory();
-  }, [auctionId]); 
+  }, [socket]); 
   
   return (
     <>
