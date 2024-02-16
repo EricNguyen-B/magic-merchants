@@ -21,7 +21,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", // Frontend URL
+      origin: "http://localhost:5173", // Allow requests from client
       methods: ["GET", "POST"]
   }
 });
@@ -30,6 +30,23 @@ app.use(express.json({ limit: "1kb" }));
 
 io.on("connection", (socket) => { //Listen to connection events
   console.log(`User Connected: ${socket.id}`);
+  socket.on("send_bid", async (data) => {
+    console.log(`User ${socket.id} placed a bid:  ${data}`);
+    //Store bid into table
+    try{
+      const {price, auction_id} = data;
+      const newBidId = uuid();
+     
+      await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+      const result = await db.all('SELECT * FROM user_bid');
+      console.log(result);
+      
+    }catch(error){
+      console.log("Bid failed");
+    }
+    socket.broadcast.emit("recieve_bid", data);
+  })
+
 })
 
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
@@ -56,13 +73,12 @@ app.post("/api/add-auction", async (req, res) => {
     }
 });
 
-// TO DO: resolve issue not being able to filter select from the DB to display bid history table successfully
 app.get("/api/check-bid-history/:auctionId", async (req, res) => {
   let result;
   try {
     const { auctionId } = req.params;
     // console.log(auctionId);
-    result = await db.all("SELECT * FROM auction_room");
+    result = await db.all("SELECT * FROM user_bid WHERE auction_id = ?", [auctionId]);
     res.json(result);
   } catch (error) {
     console.error("Failed to check bid history with auction ID", error);
