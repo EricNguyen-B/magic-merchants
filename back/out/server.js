@@ -25,6 +25,21 @@ app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
+    socket.on("send_bid", async (data) => {
+        console.log(`User ${socket.id} placed a bid:  ${data}`);
+        //Store bid into table
+        try {
+            const { price, auction_id } = data;
+            const newBidId = uuid();
+            await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+            const result = await db.all('SELECT * FROM user_bid');
+            console.log(result);
+        }
+        catch (error) {
+            console.log("Bid failed");
+        }
+        socket.broadcast.emit("recieve_bid", data);
+    });
 });
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
 app.get("/api/check-active-rooms", async (req, res) => {
@@ -56,7 +71,7 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
     try {
         const { auctionId } = req.params;
         // console.log(auctionId);
-        result = await db.all("SELECT * FROM auction_room");
+        result = await db.all("SELECT * FROM user_bid WHERE auction_id = ?", [auctionId]);
         res.json(result);
     }
     catch (error) {
@@ -64,9 +79,6 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-// app.listen(port, host, () => {
-//     console.log(`${protocol}://${host}:${port}`);
-// });
 server.listen(port, () => {
     console.log(`${protocol}://${host}:${port}`);
 });
