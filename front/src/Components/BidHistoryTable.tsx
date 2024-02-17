@@ -26,6 +26,7 @@ interface BidHistoryTableProps {
 const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
   const [bidPrice, setBidPrice] = useState<string>("");
+  const [viewerCount, setViewerCount] = useState<number>(0);
   const [refresh, setRefresh] = useState("");
 
   const checkBidHistory = async () => {
@@ -34,23 +35,25 @@ const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
     setHistoricalBids(response.data);
   }
   const handleSubmitBid = () => {
-    // console.log(parseInt(bidPrice), auctionId);
-    socket.emit("send_bid", {price: parseInt(bidPrice), auction_id: auctionId});
+    socket.emit("sending_bid", {price: parseInt(bidPrice), auction_id: auctionId});
   }
   /**Join Room of Auction ID**/
   useEffect(() => {
-    socket.emit("join_room", {auction_id: auctionId});
-  }, [])
-  /**Join Room of Auction ID**/
+    socket.emit("joining_room", {auction_id: auctionId});
+    socket.on("recieved_bid", (data) => {console.log("Recieved bid");});
+    socket.on("joined_room", (data) => {
+      console.log("Joined room");
+      setViewerCount(data['viewer_count']);
+    });
+  }, [socket])
+  /**Check Bid History**/
   useEffect(() => {
-    socket.on("recieve_bid", (data) => {
-      console.log(data);
-    })
     checkBidHistory();
-  }, [socket]); 
+  }, []); 
   
   return (
     <>
+      <h1>Current Viewer Count: {viewerCount}</h1>
       <FormControl className="bid-input">
           <TextField
               label="Enter Bid Price"
