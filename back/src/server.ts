@@ -4,7 +4,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
 import http from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import cors from "cors";
 
 const port = 3000;
@@ -28,25 +28,41 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 
-io.on("connection", (socket) => { //Listen to connection events
-  console.log(`User Connected: ${socket.id}`);
-  socket.on("send_bid", async (data) => {
-    console.log(`User ${socket.id} placed a bid:  ${data}`);
-    //Store bid into table
-    try{
-      const {price, auction_id} = data;
-      const newBidId = uuid();
-     
-      await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
-      const result = await db.all('SELECT * FROM user_bid');
-      console.log(result);
-      
-    }catch(error){
-      console.log("Bid failed");
-    }
-    socket.broadcast.emit("recieve_bid", data);
+/**Websocket Event Handlers**/
+async function handleSendBidEvent(data:any, socket: Socket) {
+  try{
+    const {price, auction_id} = data;
+    const newBidId = uuid();
+    await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+    // socket.to(auction_id).emit("recieved_bid", data);
+    io.to(auction_id).emit("recieved_bid", data); //Sends to everyone in the room including sender
+  }catch(error){
+    console.log("Failed to send bid");
+  }
+}
+async function handleJoinRoomEvent(data: any, socket: Socket) {
+  try {
+    const {auction_id} = data;
+    socket.join(auction_id);
+    const room = io.sockets.adapter.rooms.get(auction_id);
+    io.to(auction_id).emit("joined_room", {viewer_count: room?.size});
+    //console.log(`User ${socket.id} joined Room: ${auction_id} | Room has ${room?.size}`);
+  } catch (error) {
+    console.log("Failed to join room");
+  }
+}
+async function handleLeaveRoomEvent(data: any, socket: Socket) {
+  
+}
+/**Websocket Event Listeners**/
+io.on("connection", (socket) => { 
+  //console.log(`User Connected: ${socket.id}`);
+  socket.on("joining_room", (data) => {
+    handleJoinRoomEvent(data, socket);
   })
-
+  socket.on("sending_bid", (data) => {
+    handleSendBidEvent(data, socket);
+  })
 })
 
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
