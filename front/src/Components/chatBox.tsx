@@ -19,7 +19,7 @@ const ChatBox: React.FC = () => {
     useEffect(scrollToBottom, [messages]);
 
     const handleSendMessage = (): void => {
-        if (!newMessage.trim()) return; // Ignore empty messages
+        if (!newMessage.trim()) return; 
         const message: Message = {
             id: Date.now(), // Simple ID based on timestamp
             text: newMessage,
@@ -36,7 +36,6 @@ const ChatBox: React.FC = () => {
                         <Typography variant="body2">{message.text}</Typography>
                     </ListItem>
                 ))}
-                {/* Ref type is inferred from the useRef hook */}
                 <div ref={messagesEndRef} />
             </List>
             <Box component="form" sx={{ display: 'flex', p: 1, borderTop: '1px solid #ccc', alignItems: 'center' }} noValidate autoComplete="off">
@@ -47,7 +46,7 @@ const ChatBox: React.FC = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e: React.KeyboardEvent<HTMLDivElement>) => e.key === 'Enter' ? handleSendMessage() : null}
-                    sx={{ mr: 1, flexGrow: 1 }} // Use flexGrow to make the TextField grow to use available space
+                    sx={{ mr: 1, flexGrow: 1 }}
                 />
             <Button variant="contained" onClick={handleSendMessage} sx={{ height: '56px' }}>Send</Button>
             </Box>
