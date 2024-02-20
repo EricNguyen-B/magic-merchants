@@ -1,23 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import WidgetTable from "./Components/WidgetTable";
-import Layout from "./Components/Layout";
-import NotFound from "./Components/NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import RoomsPage from "./Components/pages/RoomsPage";
+import AuctionRoom from './Components/AuctionRoom';
 
 let router = createBrowserRouter([
     {
-        element: <Layout />,
-        children: [
-            {
-                path: "/",
-                element: <WidgetTable />,
-            },
-            {
-                path: "*",
-                element: <NotFound />,
-            },
-        ],
+        path: "/",
+        element: <RoomsPage />
+    },
+    {
+        path: "/auction-room/:auctionId",
+        element: <AuctionRoom />
     },
 ]);
 

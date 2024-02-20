@@ -1,119 +1,107 @@
-import express from "express";
+import express, { application, Response } from "express";
 import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import moment from "moment";
+import { v4 as uuid } from 'uuid';
+import http from "http";
+import { Server, Socket } from "socket.io";
+import cors from "cors";
 
-// https://www.npmjs.com/package/sqlite
-// https://github.com/colinhacks/zod
-// https://momentjs.com/guides/#/parsing/strict-mode/
+const port = 3000;
+const host = "localhost";
+const protocol = "http";
 
 sqlite3.verbose(); // enable better error messages
-let db = await open({
+const db = await open({
     filename: "../database.db",
     driver: sqlite3.Database,
 });
 
-let app = express();
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173", // Allow requests from client
+      methods: ["GET", "POST"]
+  }
+});
+app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 
-let colors = ["red", "blue", "green"] as const;
-let makes = ["foo", "bar", "baaz", "quux"] as const;
-let widgetBodySchema = z.object({
-    make: z.enum(makes),
-    color: z.enum(colors),
-    manufacture_date: z.string().refine((s) => {
-        return moment(s, "YYYY-MM-DD", true).toString() !== "Invalid date";
-    }),
-    notes: z.optional(z.string()),
-});
-
-// could use this to refer to the Widget's type
-// if we wanted to try typing the request handlers
-// to ensure they returned the right things
-// type Widget = z.infer<typeof widgetBodySchema>;
-
-// if parsing fails, will return a list of string error messages
-function parseError(zodError: z.ZodError): string[] {
-    let { formErrors, fieldErrors } = zodError.flatten();
-    return [
-        ...formErrors,
-        ...Object.entries(fieldErrors).map(
-            ([property, message]) => `"${property}": ${message}`
-        ),
-    ];
+/**Websocket Event Handlers**/
+async function handleSendBidEvent(data:any, socket: Socket) {
+  try{
+    const {price, auction_id} = data;
+    const newBidId = uuid();
+    await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+    // socket.to(auction_id).emit("recieved_bid", data);
+    io.to(auction_id).emit("recieved_bid", data); //Sends to everyone in the room including sender
+  }catch(error){
+    console.log("Failed to send bid");
+  }
 }
+async function handleJoinRoomEvent(data: any, socket: Socket) {
+  try {
+    const {auction_id} = data;
+    socket.join(auction_id);
+    const room = io.sockets.adapter.rooms.get(auction_id);
+    io.to(auction_id).emit("joined_room", {viewer_count: room?.size});
+    //console.log(`User ${socket.id} joined Room: ${auction_id} | Room has ${room?.size}`);
+  } catch (error) {
+    console.log("Failed to join room");
+  }
+}
+async function handleLeaveRoomEvent(data: any, socket: Socket) {
+  
+}
+/**Websocket Event Listeners**/
+io.on("connection", (socket) => { 
+  //console.log(`User Connected: ${socket.id}`);
+  socket.on("joining_room", (data) => {
+    handleJoinRoomEvent(data, socket);
+  })
+  socket.on("sending_bid", (data) => {
+    handleSendBidEvent(data, socket);
+  })
+})
 
-app.get("/api/widgets/:id", async (req, res) => {
-    let { id } = req.params;
-    let result;
+// TO DO: resolve errors with useEffect hook checking active rooms on the main page
+app.get("/api/check-active-rooms", async (req, res) => {
+  let result;
+  try {
+    result = await db.all("SELECT * FROM auction_room");
+    res.json(result);
+  } catch (error) {
+      console.error("Failed to check for all auction rooms", error);
+      res.status(500).json({ error: "Failed to check active auction rooms" });
+  }
+})
+
+app.post("/api/add-auction", async (req, res) => {
     try {
-        result = await db.get("SELECT * FROM widgets WHERE id = ?", [id]);
-    } catch (err) {
-        let error = err as Object;
-        return res.status(500).json({ errors: [error.toString()] });
+        console.log("added auction");
+        const newAuctionId = uuid();
+        await db.run('INSERT INTO auction_room (id) VALUES (?)', newAuctionId);
+        res.json({ id: newAuctionId });
+    } catch (error) {
+      console.error("Failed to add auction room:", error);
+      res.status(500).json({ error: "Failed to add auction room" });
     }
-    if (result === undefined) {
-        return res.status(404).json();
-    }
-    return res.json(result);
 });
 
-app.get("/api/widgets", async (req, res) => {
-    let result;
-    try {
-        result = await db.all("SELECT * FROM widgets");
-    } catch (err) {
-        let error = err as Object;
-        return res.status(500).json({ errors: [error.toString()] });
-    }
-    return res.json({ widgets: result });
+app.get("/api/check-bid-history/:auctionId", async (req, res) => {
+  let result;
+  try {
+    const { auctionId } = req.params;
+    // console.log(auctionId);
+    result = await db.all("SELECT * FROM user_bid WHERE auction_id = ?", [auctionId]);
+    res.json(result);
+  } catch (error) {
+    console.error("Failed to check bid history with auction ID", error);
+    res.status(500).json({ error: "Failed to check bid history" });
+  }
 });
 
-app.post("/api/widgets", async (req, res) => {
-    let parseResult = widgetBodySchema.safeParse(req.body);
-    if (!parseResult.success) {
-        return res.status(400).json({ errors: parseError(parseResult.error) });
-    }
-    let { make, color, manufacture_date, notes } = parseResult.data;
-    let dbResult;
-    try {
-        dbResult = await db.get(
-            "INSERT INTO widgets(make, color, manufacture_date, notes) VALUES(?, ?, date(?), ?) RETURNING *",
-            [make, color, manufacture_date, notes]
-        );
-    } catch (err) {
-        let error = err as Object;
-        return res.status(500).json({ errors: [error.toString()] });
-    }
-    let { id } = dbResult;
-    res.status(201).set("Location", id).json();
-});
-
-app.delete("/api/widgets/:id", async (req, res) => {
-    let { id } = req.params;
-    let result;
-    try {
-        result = await db.get("DELETE FROM widgets WHERE id = ? RETURNING id", [
-            id,
-        ]);
-    } catch (err) {
-        let error = err as Object;
-        return res.status(500).json({ errors: [error.toString()] });
-    }
-    if (result === undefined) {
-        return res.status(404).json();
-    }
-    return res.json();
-});
-
-app.put("/api/widgets/:id", async (req, res) => {
-    // TODO
-});
-
-let port = 3000;
-let host = "localhost";
-let protocol = "http";
-app.listen(port, host, () => {
-    console.log(`${protocol}://${host}:${port}`);
+server.listen(port, () => {
+  console.log(`${protocol}://${host}:${port}`);
 });
