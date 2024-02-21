@@ -29,8 +29,7 @@ async function handleSendBidEvent(data, socket) {
         const { price, auction_id } = data;
         const newBidId = uuid();
         await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
-        // socket.to(auction_id).emit("recieved_bid", data);
-        io.to(auction_id).emit("recieved_bid", data); //Sends to everyone in the room including sender
+        io.to(auction_id).emit("recieved_bid", data);
     }
     catch (error) {
         console.log("Failed to send bid");
@@ -42,19 +41,31 @@ async function handleJoinRoomEvent(data, socket) {
         socket.join(auction_id);
         const room = io.sockets.adapter.rooms.get(auction_id);
         io.to(auction_id).emit("joined_room", { viewer_count: room?.size });
-        //console.log(`User ${socket.id} joined Room: ${auction_id} | Room has ${room?.size}`);
     }
     catch (error) {
         console.log("Failed to join room");
     }
 }
-async function handleLeaveRoomEvent(data, socket) {
+async function handleExitRoomEvent(data, socket) {
+    try {
+        const { auction_id } = data;
+        socket.leave(auction_id);
+        const room = io.sockets.adapter.rooms.get(auction_id);
+        socket.to(auction_id).emit("exited_room", { viewer_count: room?.size });
+    }
+    catch (error) {
+        console.log(error);
+        console.log("Failed to exit room");
+    }
 }
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
     //console.log(`User Connected: ${socket.id}`);
     socket.on("joining_room", (data) => {
         handleJoinRoomEvent(data, socket);
+    });
+    socket.on("exiting_room", (data) => {
+        handleExitRoomEvent(data, socket);
     });
     socket.on("sending_bid", (data) => {
         handleSendBidEvent(data, socket);

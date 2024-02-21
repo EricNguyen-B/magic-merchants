@@ -27,7 +27,6 @@ const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
   const [bidPrice, setBidPrice] = useState<string>("");
   const [viewerCount, setViewerCount] = useState<number>(0);
-  const [refresh, setRefresh] = useState<boolean>(false);
 
   const checkBidHistory = async () => {
     const response = await axios.get(`/api/check-bid-history/${auctionId}`);
@@ -39,27 +38,22 @@ const BidHistoryTable = ({ auctionId }: BidHistoryTableProps) => {
   }
   /**Join Room of Auction ID**/
   useEffect(() => {
-    console.log("hello testing useeffect")
     socket.emit("joining_room", {auction_id: auctionId});
-    socket.on("recieved_bid", (data) => {
-      console.log("Recieved bid");
-      setRefresh(prevState => !prevState);
-    });
-    socket.on("joined_room", (data) => {
-      console.log("Joined room");
-      setViewerCount(data['viewer_count']);
-      setRefresh(prevState => !prevState);
-    });
+    socket.on("recieved_bid", (data) => {checkBidHistory(); });
+    socket.on("joined_room", (data) => {setViewerCount(data['viewer_count']);});
+    socket.on("exited_room", (data) => {setViewerCount(data['viewer_count']);});
     /**Clean up socket listeners**/
     return () => {
+      socket.emit("exiting_room", {auction_id: auctionId});
       socket.off("recieved_bid");
       socket.off("joined_room");
+      socket.off("exited_room");
     };
   }, [auctionId])
   /**Check Bid History**/
   useEffect(() => {
     checkBidHistory();
-  }, [refresh]); 
+  }, []); 
   
   return (
     <>
