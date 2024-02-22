@@ -11,7 +11,7 @@ type ActiveRoom = {
 function RoomsPage() {
     const [activeRooms, setActiveRooms] = useState<ActiveRoom[]>([]);
 
-    const handleAddRoom = async (event) => {
+    const handleAddRoom = async () => {
         try {
             await axios.post("/api/add-auction");            
         } catch (error) {
