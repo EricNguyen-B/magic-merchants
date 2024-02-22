@@ -12,7 +12,9 @@ export const SocketContext = createContext<contextType>({socket: null});
 export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     useEffect(() => {
-        const newSocket = io(`${protocal}://${host}:${port}`);
+        const newSocket = io(`${protocal}://${host}:${port}`, {
+            transports: ['websocket'],
+        });
         setSocket(newSocket);
     
         return () => {
