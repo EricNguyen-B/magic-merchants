@@ -3,6 +3,7 @@ import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
+import * as url from "url";
 import http from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
@@ -10,8 +11,10 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
-const db = await open({
-    filename: "../database.db",
+let __dirname = url.fileURLToPath(new URL("..", import.meta.url));
+let dbfile = `${__dirname}database.db`;
+let db = await open({
+    filename: dbfile,
     driver: sqlite3.Database,
 });
 
