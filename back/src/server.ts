@@ -6,12 +6,10 @@ import { v4 as uuid } from 'uuid';
 import http from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
+import * as dotenv from 'dotenv';
 
-const port = 3000;
-const host = "localhost";
-const protocol = "http";
-
-sqlite3.verbose(); // enable better error messages
+dotenv.config({path: '../.env'});
+sqlite3.verbose(); 
 const db = await open({
     filename: "../database.db",
     driver: sqlite3.Database,
@@ -19,11 +17,18 @@ const db = await open({
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = ["http://localhost:5173", process.env.CORS_ORIGIN];
 const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", // Allow requests from client
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }else {
+            callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ["GET", "POST"]
-  }
+}
 });
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
@@ -110,6 +115,6 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`${protocol}://${host}:${port}`);
+server.listen(3000, () => {
+  console.log(`http://localhost:3000`);
 });

@@ -5,19 +5,32 @@ import { v4 as uuid } from 'uuid';
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-const port = 3000;
-const host = "localhost";
-const protocol = "http";
-sqlite3.verbose(); // enable better error messages
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
+sqlite3.verbose();
 const db = await open({
     filename: "../database.db",
     driver: sqlite3.Database,
 });
 const app = express();
 const server = http.createServer(app);
+// const io = new Server(server, {
+//     cors: {
+//       origin: process.env.CORS_ORIGIN || "http://localhost:5173", // Allow requests from client
+//       methods: ["GET", "POST"]
+//   }
+// });
+const allowedOrigins = ["http://localhost:5173", process.env.CORS_ORIGIN];
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ["GET", "POST"]
     }
 });
@@ -60,7 +73,6 @@ async function handleExitRoomEvent(data, socket) {
 }
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
-    //console.log(`User Connected: ${socket.id}`);
     socket.on("joining_room", (data) => {
         handleJoinRoomEvent(data, socket);
     });
@@ -108,6 +120,6 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-server.listen(port, () => {
-    console.log(`${protocol}://${host}:${port}`);
+server.listen(3000, () => {
+    console.log(`http://localhost:3000`);
 });
