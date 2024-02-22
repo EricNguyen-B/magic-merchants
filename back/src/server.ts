@@ -115,6 +115,10 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
   }
 });
 
-server.listen(3000, () => {
-  console.log(`http://localhost:3000`);
+const port = process.env.PORT;
+const host = process.env.HOST;
+const protocal = process.env.PROTOCAL;
+
+server.listen(port, () => {
+  console.log(`${protocal}://${host}:${port}`);
 });

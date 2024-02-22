@@ -14,12 +14,6 @@ const db = await open({
 });
 const app = express();
 const server = http.createServer(app);
-// const io = new Server(server, {
-//     cors: {
-//       origin: process.env.CORS_ORIGIN || "http://localhost:5173", // Allow requests from client
-//       methods: ["GET", "POST"]
-//   }
-// });
 const allowedOrigins = ["http://localhost:5173", process.env.CORS_ORIGIN];
 const io = new Server(server, {
     cors: {
@@ -120,6 +114,9 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-server.listen(3000, () => {
-    console.log(`http://localhost:3000`);
+const port = process.env.PORT;
+const host = process.env.HOST;
+const protocal = process.env.PROTOCAL;
+server.listen(port, () => {
+    console.log(`${protocal}://${host}:${port}`);
 });
