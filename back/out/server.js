@@ -14,7 +14,7 @@ const db = await open({
 });
 const app = express();
 const server = http.createServer(app);
-const allowedOrigins = ["http://localhost:5173", process.env.CORS_ORIGIN];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:4173", process.env.CORS_ORIGIN];
 const io = new Server(server, {
     cors: {
         origin: (origin, callback) => {
