@@ -14,6 +14,7 @@ export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children
     useEffect(() => {
         const newSocket = io(`${protocal}://${host}:${port}`, {
             transports: ['websocket'],
+            withCredentials: true,
         });
         setSocket(newSocket);
     

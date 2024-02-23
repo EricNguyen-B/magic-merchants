@@ -2,14 +2,17 @@ import express from "express";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
+import * as url from "url";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '../.env' });
 sqlite3.verbose();
-const db = await open({
-    filename: "../database.db",
+let __dirname = url.fileURLToPath(new URL("..", import.meta.url));
+let dbfile = `${__dirname}database.db`;
+let db = await open({
+    filename: dbfile,
     driver: sqlite3.Database,
 });
 const app = express();
@@ -25,7 +28,8 @@ const io = new Server(server, {
                 callback(new Error('Not allowed by CORS'));
             }
         },
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     }
 });
 app.use(cors());
