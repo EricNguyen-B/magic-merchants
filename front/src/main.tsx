@@ -2,18 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
-import RoomsPage from "./Components/pages/RoomsPage";
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material/styles'; // Use createTheme
+import HomePage from "./Components/pages/HomePage";
 import AuctionRoom from './Components/AuctionRoom';
-import CreateAuctionForm
- from "./Components/CreateAuctionForm";
+
 let router = createBrowserRouter([
     {
         path: "/",
-        element: <RoomsPage />
-    },
-    {
-        path: "/add-auction",
-        element: <CreateAuctionForm />
+        element: <HomePage />
     },
     {
         path: "/auction-room/:auctionId",
