@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import {TextField, Select, FormControl, MenuItem, Button, InputLabel} from '@mui/material';
 import axios from 'axios';
-import {SocketContext} from '../Context/SocketContext'
+import {SocketContext} from '../../Context/SocketContext'
 
 type Bid = {
     id: string,
