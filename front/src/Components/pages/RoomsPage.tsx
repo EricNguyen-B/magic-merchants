@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import RoomsList from "../RoomsList";
+import RoomsList from "../content/RoomsList";
 
 type ActiveRoom = {
     id: string;

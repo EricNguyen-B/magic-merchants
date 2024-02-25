@@ -2,10 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material/styles'; // Use createTheme
+import { ThemeProvider, createTheme } from '@mui/material/styles'; // Use createTheme
 import HomePage from "./components/pages/HomePage";
-import RoomsPage from "./Components/pages/RoomsPage";
-import AuctionRoom from './Components/AuctionRoom';
+import AuctionRoom from './components/content/AuctionRoom';
+import SellersPage from "./components/pages/SellersPage";
 
 const themeOptions = {
     palette: {
@@ -17,8 +17,8 @@ const themeOptions = {
             main: '#d28f85'
         },
         background: {
-            default: '#121212', // A dark background for the main content
-            paper: '#1e1e1e', // A slightly lighter color for components like Sidebar
+            default: '#121212', 
+            paper: '#1e1e1e'
         },
     }
 };
@@ -34,12 +34,18 @@ let router = createBrowserRouter([
         path: "/auction-room/:auctionId",
         element: <AuctionRoom />
     },
+    {
+        path: "/sellers-page",
+        element: <SellersPage />
+    }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <SocketProvider>
-            <RouterProvider router={router} />
+            <ThemeProvider theme={theme}>
+                <RouterProvider router={router} />
+            </ThemeProvider>
         </SocketProvider>
     </React.StrictMode>
 );
