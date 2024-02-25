@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
-import { Grid, Typography, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Grid, Typography, TextField, FormControlLabel, Checkbox, Box } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import InputAdornment from '@mui/material/InputAdornment';
 
-export default function CreateAuctionForm() {
+export default function AuctionForm() {
   const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
   const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
   const [cardNameValue, setCardNameValue] = useState<string>("");
@@ -41,7 +41,7 @@ export default function CreateAuctionForm() {
     }
   }
   return (
-    <React.Fragment>
+    <Box>
       <Typography variant="h6" gutterBottom>
         Create Auction
       </Typography>
@@ -124,6 +124,6 @@ export default function CreateAuctionForm() {
           </Button>
         </Grid>
       </Grid>
-    </React.Fragment>
+    </Box>
   );
 }

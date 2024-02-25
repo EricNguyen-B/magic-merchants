@@ -2,14 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
-import { ThemeProvider, createTheme } from '@mui/material/styles'; // Use createTheme
+import { ThemeProvider, createTheme, PaletteMode } from '@mui/material';
 import HomePage from "./Components/pages/HomePage";
 import AuctionRoom from './Components/content/AuctionRoom';
 import SellersPage from "./Components/pages/SellersPage";
 
 const themeOptions = {
     palette: {
-        mode: 'dark',
+        mode: 'dark' as PaletteMode,
         primary: {
             main: '#bc1f39'
         },
