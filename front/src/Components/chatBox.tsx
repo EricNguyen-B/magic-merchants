@@ -1,30 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, TextField, Button, List, ListItem, Typography } from '@mui/material';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
 
 interface Message {
-  id: number;
+  id: string; 
   text: string;
 }
 
 const ChatBox: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
-    // Specify the type of the ref as HTMLDivElement to match the element type it refers to
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     const scrollToBottom = (): void => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    useEffect(() => {
+        socket.on('received_message', (message: Message) => {
+            setMessages((prevMessages) => [...prevMessages, message]);
+        });
+
+        return () => {
+            socket.off('received_message');
+        };
+    }, []);
+
     useEffect(scrollToBottom, [messages]);
 
     const handleSendMessage = (): void => {
-        if (!newMessage.trim()) return; 
-        const message: Message = {
-            id: Date.now(), // Simple ID based on timestamp
-            text: newMessage,
-        };
-        setMessages([...messages, message]);
+        if (!newMessage.trim()) return;
+        socket.emit('send_message', { text: newMessage, roomId: 'yourRoomId' }); // You need to define how you handle room IDs
         setNewMessage('');
     };
 
@@ -48,7 +56,7 @@ const ChatBox: React.FC = () => {
                     onKeyPress={(e: React.KeyboardEvent<HTMLDivElement>) => e.key === 'Enter' ? handleSendMessage() : null}
                     sx={{ mr: 1, flexGrow: 1 }}
                 />
-            <Button variant="contained" onClick={handleSendMessage} sx={{ height: '56px' }}>Send</Button>
+                <Button variant="contained" onClick={handleSendMessage} sx={{ height: '56px' }}>Send</Button>
             </Box>
         </Box>
     );

@@ -51,6 +51,29 @@ async function handleJoinRoomEvent(data: any, socket: Socket) {
     console.log("Failed to join room");
   }
 }
+
+async function handleSendMessageEvent(data: any, socket: Socket) {
+  try {
+      const { text, roomId } = data;
+      const newMessageId = uuid();
+      await db.run('INSERT INTO chat_messages (id, text, room_id) VALUES (?, ?, ?)', [newMessageId, text, roomId]);
+      io.to(roomId).emit("received_message", { id: newMessageId, text, roomId });
+  } catch (error) {
+      console.log("Failed to send message", error);
+  }
+}
+
+async function handleJoinChatRoomEvent(data: any, socket: Socket) {
+  try {
+      const { roomId } = data;
+      socket.join(roomId);
+      const room = io.sockets.adapter.rooms.get(roomId);
+      console.log(`User ${socket.id} joined chat room: ${roomId}`);
+  } catch (error) {
+      console.log("Failed to join chat room", error);
+  }
+}
+
 async function handleLeaveRoomEvent(data: any, socket: Socket) {
   
 }
@@ -63,9 +86,26 @@ io.on("connection", (socket) => {
   socket.on("sending_bid", (data) => {
     handleSendBidEvent(data, socket);
   })
+  socket.on("join_chat_room", (data) =>{ 
+    handleJoinChatRoomEvent(data, socket)
+  });
+  socket.on("send_message", (data) =>{ 
+    handleSendMessageEvent(data, socket)
+  });
 })
 
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
+app.get("/api/chat-history/:roomId", async (req, res) => {
+  try {
+      const { roomId } = req.params;
+      const messages = await db.all("SELECT * FROM chat_messages WHERE room_id = ?", roomId);
+      res.json(messages);
+  } catch (error) {
+      console.error("Failed to fetch chat history", error);
+      res.status(500).json({ error: "Failed to fetch chat history" });
+  }
+});
+
 app.get("/api/check-active-rooms", async (req, res) => {
   let result;
   try {
