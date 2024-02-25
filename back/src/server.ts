@@ -7,6 +7,8 @@ import http from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
+import * as schemas from "./schemas.js";
+import dayjs from "dayjs";
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -77,7 +79,6 @@ io.on("connection", (socket) => {
     handleSendBidEvent(data, socket);
   });
 })
-
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
 app.get("/api/check-active-rooms", async (req, res) => {
   let result;
@@ -91,13 +92,18 @@ app.get("/api/check-active-rooms", async (req, res) => {
 })
 
 app.post("/api/add-auction", async (req, res) => {
+    const sqlCreateAuctionQuery = 
+      `INSERT INTO auction_room 
+      (id, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
     try {
-        console.log("added auction");
-        const newAuctionId = uuid();
-        await db.run('INSERT INTO auction_room (id) VALUES (?)', newAuctionId);
-        res.json({ id: newAuctionId });
+      /**Validate Request Schema**/
+      const {dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement} = schemas.auctionSchema.parse(req.body);
+      /**Run Auction Query**/
+      await db.run(sqlCreateAuctionQuery, [uuid(), cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement]);
+      /**Return a Success Message**/
+      res.status(200).json({message: "Success", auction: req.body});
     } catch (error) {
-      console.error("Failed to add auction room:", error);
       res.status(500).json({ error: "Failed to add auction room" });
     }
 });

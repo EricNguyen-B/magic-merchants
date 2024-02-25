@@ -4,11 +4,16 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
 import RoomsPage from "./Components/pages/RoomsPage";
 import AuctionRoom from './Components/AuctionRoom';
-
+import CreateAuctionForm
+ from "./Components/CreateAuctionForm";
 let router = createBrowserRouter([
     {
         path: "/",
         element: <RoomsPage />
+    },
+    {
+        path: "/add-auction",
+        element: <CreateAuctionForm />
     },
     {
         path: "/auction-room/:auctionId",
