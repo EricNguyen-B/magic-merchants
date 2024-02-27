@@ -10,12 +10,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import axios from '../../../node_modules/axios/index';
-
+import { Room } from '../../types';
 const drawerWidth = 240;
-
-type Room = {
-    id: string;
-}
 
 const Sidebar = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -23,11 +19,12 @@ const Sidebar = () => {
     const checkActiveRooms = async () => {
         const response = await axios.get(`/api/check-active-rooms`);
         setRooms(response.data);
+        console.log(response.data);
     }
 
     useEffect(() => {
         checkActiveRooms();
-    }, rooms)
+    }, [])
 
     return ( 
         <Box sx={{ display: 'flex' }}>
@@ -39,7 +36,7 @@ const Sidebar = () => {
                 flexShrink: 0,
                 [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
                 }}
-                open={open}
+                open={true}
                 style={{paddingTop: "20px"}}
             >
                 <Toolbar />
@@ -48,12 +45,12 @@ const Sidebar = () => {
                         <ListItemText style={{display:'flex', justifyContent:'center'}} secondary="RECOMMENDED ROOMS"/>
                         {rooms.length > 0 ? (
                             rooms.map((room: Room, index) => (
-                                <ListItem key={room} disablePadding>
+                                <ListItem key={room.id} disablePadding>
                                     <ListItemButton>
                                         <ListItemIcon>
                                             <MeetingRoomIcon />
                                         </ListItemIcon>
-                                        <ListItemText primary={room.id} />
+                                        <ListItemText primary={room.card_name} />
                                     </ListItemButton>
                                 </ListItem>
                             ))

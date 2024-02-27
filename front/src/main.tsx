@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
 import { ThemeProvider, createTheme, PaletteMode } from '@mui/material';
 import HomePage from "./Components/pages/HomePage";
-import AuctionRoom from './Components/content/AuctionRoom';
+import AuctionRoom from './Components/pages/AuctionRoomPage';
 import SellersPage from "./Components/pages/SellersPage";
 
 const themeOptions = {
@@ -31,7 +31,7 @@ let router = createBrowserRouter([
         element: <HomePage />
     },
     {
-        path: "/auction-room/:auctionId",
+        path: "/auction-room",
         element: <AuctionRoom />
     },
     {

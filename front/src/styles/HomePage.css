@@ -2,3 +2,6 @@
     background-color: black; /* Set the background color to black */
     height: 100vh; /* Make sure the container fills the whole viewport height */
 }
+h1 {
+    color:orange
+}

@@ -1,8 +1,9 @@
 import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
 import TopNavBar from "../common/Navbar";
-import ClippedDrawer from "../common/Sidebar";
+import SideBar from "../common/Sidebar";
 import '../../styles/HomePage.css';
-import HomeContent from '../content/HomeContent';
+import RoomsGrid from '../content/RoomsGrid';
 
 const HomePage = () => {
     return (
@@ -15,16 +16,15 @@ const HomePage = () => {
             <Grid item> 
                 <TopNavBar />
             </Grid>
-            <Grid 
-                item 
-                container 
-                style={{ flexGrow: 1 }}
-            > 
+            <Grid item container style={{ flexGrow: 1 }}> 
                 <Grid item xs={2}> 
-                    <ClippedDrawer/>
+                    <SideBar/>
                 </Grid>
                 <Grid item xs={10}> 
-                    <HomeContent />
+                <Box sx={{ pt: 8 }}>
+                    <h3>Browse Rooms</h3>
+                    <RoomsGrid />
+                </Box>
                 </Grid>
             </Grid>
         </Grid>

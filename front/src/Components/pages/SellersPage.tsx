@@ -1,7 +1,5 @@
-import axios from "axios";
-import Button from '@mui/material/Button';
 import Navbar from "../common/Navbar";
-import AuctionForm from "../content/AuctionForm";
+import AuctionForm from "../content/SellerForm";
 import { Grid } from "@mui/material";
 import '../../styles/HomePage.css';
 
