@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
+import { scheduleAuctionEvent } from "./schedules.js";
 dotenv.config({ path: '../.env' });
 sqlite3.verbose();
 const db = await open({
@@ -97,8 +98,13 @@ app.post("/api/add-auction", async (req, res) => {
     try {
         /**Validate Request Schema**/
         const { dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement } = schemas.auctionSchema.parse(req.body);
-        /**Run Auction Query**/
-        await db.run(sqlCreateAuctionQuery, [uuid(), cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement]);
+        /**generate Auction ID**/
+        const auctionID = uuid();
+        /**Run Auction Query and Then Schedule Event**/
+        await db.run(sqlCreateAuctionQuery, [auctionID, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
+            .then(() => {
+            scheduleAuctionEvent(auctionID, dateStart, dateEnd, db, io);
+        });
         /**Return a Success Message**/
         res.status(200).json({ message: "Success", auction: req.body });
     }
