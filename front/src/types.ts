@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export type Room = {
     id: string;
     date_start: string,
@@ -12,4 +14,8 @@ export type Bid = {
     id: string,
     auction_id: string,
     price: number
+}
+
+export type ProjectedDate = {
+    date: Dayjs
 }

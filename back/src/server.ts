@@ -8,7 +8,7 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
-import { scheduleAuctionEvent } from "./schedules.js";
+import { AuctionEventScheduler } from "./schedules.js";
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -30,10 +30,11 @@ const io = new Server(server, {
         }
       },
       methods: ["GET", "POST"]
-}
+  }
 });
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
+const auctionEventScheduler = new AuctionEventScheduler(db, io);
 
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data:any, socket: Socket) {
@@ -104,7 +105,7 @@ app.post("/api/add-auction", async (req, res) => {
       /**Run Auction Query and Then Schedule Event**/
       await db.run(sqlCreateAuctionQuery, [auctionID, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
         .then(() => {
-          scheduleAuctionEvent(auctionID, dateStart, dateEnd, db, io);
+          auctionEventScheduler.scheduleEvent(auctionID, dateStart, dateEnd);
         });
       /**Return a Success Message**/
       res.status(200).json({message: "Success", auction: req.body});

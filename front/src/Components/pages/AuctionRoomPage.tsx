@@ -2,10 +2,12 @@ import { useContext, useEffect, useState } from 'react';
 import {SocketContext} from '../../Context/SocketContext'
 import { useLocation } from 'react-router-dom';
 import BidHistoryTable from "../content/AuctionRoomBidTable";
+import TimerCountDown from '../common/Timer';
 import { Room } from '../../types';
 import Navbar from "../common/Navbar";
 import {TextField, FormControl, Button, Grid} from '@mui/material';
 import '../../styles/HomePage.css';
+import dayjs from 'dayjs';
 
 const AuctionRoom = () => {
     const socket = useContext(SocketContext).socket;
@@ -34,9 +36,10 @@ const AuctionRoom = () => {
         <Grid className="homepage-container">
             <Grid item>
                 <Navbar />
+                <h1>Auction Room {room.card_name}</h1>
+                <h1>Current Viewer Count: {viewerCount}</h1>
+                <TimerCountDown date={dayjs(room.date_start)}></TimerCountDown>
             </Grid>
-            <h1>Auction Room {room.card_name}</h1>
-            <h1>Current Viewer Count: {viewerCount}</h1>
             <FormControl className="bid-input">
                 <TextField
                     label="Enter Bid Price"

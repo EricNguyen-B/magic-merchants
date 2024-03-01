@@ -46,7 +46,7 @@ const RoomCard = (room : Room ) => {
                     onClick={handleNavigateToAuctionRoom}
                 />
                 <CardContent sx={{ flexGrow: 1}}>
-                    <PodcastsIcon>Hello</PodcastsIcon>
+                    <PodcastsIcon></PodcastsIcon>
                     <p>{viewerCount} Watching</p>
                 </CardContent>
               

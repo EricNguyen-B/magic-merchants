@@ -31,7 +31,7 @@ export default function RoomsGrid() {
             socket?.off("ending_auction");
         };
         
-    }, []);
+    }, [socket]);
 
     return (
         <Box sx={{ flexGrow: 1 }}>
