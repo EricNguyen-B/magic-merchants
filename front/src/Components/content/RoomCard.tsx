@@ -30,6 +30,7 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
             socket?.off(`${room.id}/recieved_bid`);
         };
     }, [socket]);
+    const testImg = "https://imageio.forbes.com/specials-images/imageserve/5ee17b69298ad300068f40d3/-Invoke-Prejudice--is-one-of-seven-cards-to-be-removed-from-the-game-/960x0.png?format=png&width=960";
 
     const handleNavigateToAuctionRoom = () => {
         navigate(`/auction-room`, {state: room});
@@ -61,11 +62,17 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
                 title={`Product: ${room.card_name}`}
                 subheader={`Condition: ${room.card_condition}`}
             ></CardHeader>
-            <CardActionArea sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardActionArea sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <CardMedia 
                     component="img"
-                    sx={{ height: 0, paddingTop: '56.25%' }}
-                    image=""
+                    sx={{
+                        width: '70%', // Use 100% of the card width
+                        // Use an aspect ratio that matches MTG card dimensions
+                        // This is achieved by setting the height to 'auto' to maintain the aspect ratio
+                        height: 'auto',
+                        objectFit: 'contain', // This makes sure the whole image is shown
+                    }}
+                    image={testImg}
                     alt="Thumbnail"
                     onClick={handleNavigateToAuctionRoom}
                 />

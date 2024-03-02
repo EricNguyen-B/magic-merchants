@@ -53,8 +53,16 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const Navbar = () => {
   const navigate = useNavigate();
 
+  const handleBuyerNavigation = () => {
+    navigate('/buyers-page');
+  }
+
   const handleSellerNavigation = () => {
     navigate('/sellers-page');
+  }
+
+  const handleHomeNavigation = () => {
+    navigate('/');
   }
 
   return (
@@ -66,6 +74,7 @@ const Navbar = () => {
             noWrap
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
+            onClick={() => handleHomeNavigation()}
           >
             Magic Merchants
           </Typography>
@@ -83,7 +92,7 @@ const Navbar = () => {
           </Box>
 
           <Box sx={{ flexGrow: 0, display: 'flex', gap: 1 }}>
-            <Button variant="contained" onClick={() => handleSellerNavigation()}>
+            <Button variant="contained" onClick={() => handleBuyerNavigation()}>
               Buyers
             </Button>
             <Button variant="contained" onClick={() => handleSellerNavigation()}>
