@@ -21,6 +21,7 @@ const AuctionRoom = () => {
       }
     /**Join Room of Auction ID**/
     useEffect(() => {
+        console.log(room);
         socket?.emit("joining_room", {auction_id: room.id});
         socket?.on("joined_room", (data) => {setViewerCount(data['viewer_count']);});
         socket?.on("exited_room", (data) => {setViewerCount(data['viewer_count']);});
@@ -38,7 +39,23 @@ const AuctionRoom = () => {
                 <Navbar />
                 <h1>Auction Room {room.card_name}</h1>
                 <h1>Current Viewer Count: {viewerCount}</h1>
-                <TimerCountDown date={dayjs(room.date_start)}></TimerCountDown>
+                {(() => {
+                        //TODO: Refactor Switch Statements into A JSX Function That Takes in 3 Components and Room as Props
+                        switch (room.room_status){
+                            case "active":
+                                return (<div>
+                                            <h1>Countdown Till Auction End</h1>
+                                            <TimerCountDown date={dayjs(room.date_end)}></TimerCountDown>
+                                        </div>)
+                            case "inactive":
+                                return (<div>
+                                            <h1>Countdown Till Auction Starts</h1>
+                                            <TimerCountDown date={dayjs(room.date_start)}></TimerCountDown>
+                                        </div>)
+                            case "complete":
+                                return (<p>AUCTION COMPLETE</p>)
+                        }
+                    })()}
             </Grid>
             <FormControl className="bid-input">
                 <TextField

@@ -10,10 +10,10 @@ export class AuctionEventScheduler{
         this.io = io;
     }
     public scheduleEvent(auctionID: String, startDate: Date, endDate: Date){
-        const sqlQuery = `UPDATE auction_room SET is_active = ? WHERE id = ?`;
+        const sqlQuery = `UPDATE auction_room SET room_status = ? WHERE id = ?`;
         try{
             schedule.scheduleJob(startDate, async () => {
-                await this.db.run(sqlQuery, [true, auctionID])
+                await this.db.run(sqlQuery, ["active", auctionID])
                 .then(()=> {
                         console.log(`Starting Auction: ${auctionID}`);
                         this.io.sockets.emit("starting_auction");
@@ -21,7 +21,7 @@ export class AuctionEventScheduler{
                 )
             });
             schedule.scheduleJob(endDate, async () => {
-                await this.db.run(sqlQuery, [false, auctionID])
+                await this.db.run(sqlQuery, ["completed", auctionID])
                 .then(()=> {
                         console.log(`Ending Auction: ${auctionID}`);
                         this.io.sockets.emit("ending_auction");
@@ -32,25 +32,31 @@ export class AuctionEventScheduler{
             console.log("ERROR: Could Not Schedule Event");
         }
     }
-    public async scheduleEvents(){
-        /**INCOMPLETE WORK IN PROGRESS**/
-        const sqlQuerySetActive = `UPDATE auction_room SET is_active = 1 
-                            WHERE ? BETWEEN date_start AND date_end`;
-        const sqlQuerySetInactive = `UPDATE auction_room SET is_active = 0 
-                            WHERE ? NOT BETWEEN date_start AND date_end`;
-        const sqlQueryFutureEvents = `SELECT * FROM auction_room 
-                                        WHERE ? NOT BETWEEN date_start AND date_end AND ? < date_start`;
+    public async onStartScheduleEvents(){
+        const sqlQuerySetActive = `UPDATE auction_room SET room_status = 'active' WHERE ? BETWEEN date_start AND date_end`;
+        const sqlQuerySetInactive = `UPDATE auction_room SET room_status = 'inactive' WHERE ? < date_start`;
+        const sqlQuerySetComplete = `UPDATE auction_room SET room_status = 'complete' WHERE ? > date_end`;
+        const sqlQueryFutureEvents = `SELECT * FROM auction_room WHERE ? < date_start`;
+        const sqlQueryCurrentEvents = `SELECT * FROM auction_room WHERE ? > date_start AND ? < date_end`;
         try{
-            const currDate = new Date();
+            const currDate = new Date().toISOString();
             await this.db.run(sqlQuerySetActive, [currDate]);
             await this.db.run(sqlQuerySetInactive, [currDate]);
-            const futureEvents = await this.db.all(sqlQueryFutureEvents, [currDate, currDate]);
+            await this.db.run(sqlQuerySetComplete, [currDate]);
+            const currentEvents = await this.db.all(sqlQueryCurrentEvents, [currDate, currDate]);
+            const futureEvents = await this.db.all(sqlQueryFutureEvents, [currDate]);
             /**Schedule Future Events**/
+            console.log("-----------------Scheduling Future Events-----------------");
             futureEvents.forEach(auction => {
                 console.log(auction.id, auction.date_start, auction.date_end);
                 this.scheduleEvent(auction.id, auction.date_start, auction.date_end);
             });
-            
+            /**Schedule Ongoing Events**/
+            console.log("-----------------Scheduling Current Events-----------------");
+            currentEvents.forEach(auction => {
+                console.log(auction.id, auction.date_start, auction.date_end);
+                this.scheduleEvent(auction.id, auction.date_start, auction.date_end);
+            });
         }catch(error){
             console.log(error);
         }

@@ -2,25 +2,35 @@ import { useEffect, useState } from "react";
 import dayjs, {Dayjs} from "dayjs";
 import { ProjectedDate } from "../../types";
 
+const TimerCountDown = ({ date }: ProjectedDate) => {
+    const calculateTimeLeft = () => {
+        const difference = date.diff(dayjs());
+        const duration = {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        };
+        return duration;
+    };
 
-const TimerCountDown = ({date} : ProjectedDate) => {
-    const [dateDifference, setDateDifference] = useState<Dayjs>(dayjs(date.diff(dayjs(), "millisecond")));
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
     useEffect(() => {
-        setInterval(() => {
-            setDateDifference(dayjs(date.diff(dayjs(), "millisecond")));
-        }, 500);
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
     }, []);
+
     const formatCountdown = () => {
-        const days = dateDifference.day().toString().padStart(2, '0');
-        const hours = dateDifference.hour().toString().padStart(2, '0');
-        const minutes = dateDifference.minute().toString().padStart(2, '0');
-        const seconds = dateDifference.second().toString().padStart(2, '0');
-        return `${days} DAYS :${hours} HOURS :${minutes} MINUTES :${seconds} SECONDS`;
+        const { days, hours, minutes, seconds } = timeLeft;
+        return `${days.toString().padStart(2, '0')} DAYS : ${hours.toString().padStart(2, '0')} HOURS : ${minutes.toString().padStart(2, '0')} MINUTES : ${seconds.toString().padStart(2, '0')} SECONDS`;
     };
-    
+
     return (
-        <div className="timer-count-dowm">
+        <div className="timer-count-down">
             <p>{formatCountdown()}</p>
         </div>
     );

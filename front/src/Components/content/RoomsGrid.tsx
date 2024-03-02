@@ -13,7 +13,6 @@ export default function RoomsGrid() {
 
     const checkTopBids = async () => {
         const response = await axios.get("/api/check-top-bids");
-        console.log(response.data)
         setTopBids(response.data);
     }
     const checkActiveRooms = async () => {

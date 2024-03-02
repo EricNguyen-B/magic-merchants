@@ -9,6 +9,8 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
 import { SocketContext } from '../../Context/SocketContext';
 
 const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
@@ -19,7 +21,6 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
    
     /**Listen for Auction Room Changes**/
     useEffect(() => {
-        console.log(bid);
         socket?.emit("getting_viewer_count", {auction_id: room.id});
         socket?.on(`${room.id}/view_count`, (data) => {setViewerCount(data['viewer_count'])});
         socket?.on(`${room.id}/recieved_bid`, (data) => {setCurrentBidPrice(data['bid_price'])});
@@ -38,13 +39,19 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
     return (
         <Card sx={{ maxWidth: 345, width: '100%', height: '100%' }}>
             <CardHeader
-                avatar={
-                    room.is_active? (
-                        <EventAvailableIcon sx={{color: green[500]}}></EventAvailableIcon>
-                    ):
-                    (
-                        <EventBusyIcon sx={{color: red[500]}}></EventBusyIcon>
-                    )
+                avatar={(() => {
+                        //TODO: Refactor Switch Statements into A JSX Function That Takes in 3 Components and Room as Props
+                        switch (room.room_status){
+                            case "active":
+                                return (<EventAvailableIcon sx={{color: green[500]}}></EventAvailableIcon>)
+                            case "inactive":
+                                return (<EventBusyIcon sx={{color: red[500]}}></EventBusyIcon>)
+                            case "complete":
+                                return (<CheckCircleIcon sx={{color: green[500]}}></CheckCircleIcon>)
+                            default:
+                                return (<CloseIcon sx={{color: red[500]}}></CloseIcon>)
+                        }
+                    })()
                 }
                 action={
                     <IconButton aria-label="settings">

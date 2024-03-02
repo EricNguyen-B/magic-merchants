@@ -33,7 +33,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 const auctionEventScheduler = new AuctionEventScheduler(db, io);
-auctionEventScheduler.scheduleEvents();
+auctionEventScheduler.onStartScheduleEvents();
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data, socket) {
     try {
@@ -147,7 +147,6 @@ app.get("/api/check-top-bids", async (req, res) => {
     const sqlGetTopBids = 'SELECT id, auction_id, MAX(price) AS price FROM user_bid GROUP BY auction_id';
     try {
         const result = await db.all(sqlGetTopBids);
-        console.log(result);
         res.json(result);
     }
     catch (error) {

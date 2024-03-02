@@ -35,7 +35,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 const auctionEventScheduler = new AuctionEventScheduler(db, io);
-auctionEventScheduler.scheduleEvents();
+auctionEventScheduler.onStartScheduleEvents();
 
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data:any, socket: Socket) {
