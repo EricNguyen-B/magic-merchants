@@ -17,7 +17,9 @@ CREATE TABLE user_bid (
 );
 
 -- Mock data for auction_room
-INSERT INTO auction_room (id) VALUES ('room1');
-INSERT INTO auction_room (id) VALUES ('room2');
-INSERT INTO auction_room (id) VALUES ('room3');
-INSERT INTO auction_room (id) VALUES ('room4');
+INSERT INTO auction_room (id, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, is_active)
+VALUES
+    ('1', 'Charizard', 'Mint', '2024-03-01', '2024-03-10', 100, 5, 1),
+    ('2', 'Blastoise', 'Excellent', '2024-03-05', '2024-03-15', 80, 4, 1),
+    ('3', 'Venusaur', 'Good', '2024-03-08', '2024-03-18', 60, 3, 1),
+    ('4', 'Pikachu', 'Fair', '2024-03-12', '2024-03-22', 40, 2, 1);

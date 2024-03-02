@@ -35,6 +35,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
 const auctionEventScheduler = new AuctionEventScheduler(db, io);
+auctionEventScheduler.scheduleEvents();
 
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data:any, socket: Socket) {
@@ -42,7 +43,8 @@ async function handleSendBidEvent(data:any, socket: Socket) {
     const {price, auction_id} = data;
     const newBidId = uuid();
     await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
-    io.to(auction_id).emit("recieved_bid", data); 
+    io.to(auction_id).emit("recieved_bid", {bid_price: price}); 
+    io.emit(`${auction_id}/recieved_bid`, {bid_price: price});
   }catch(error){
     console.log("Failed to send bid");
   }
@@ -53,6 +55,7 @@ async function handleJoinRoomEvent(data: any, socket: Socket) {
     socket.join(auction_id);
     const room = io.sockets.adapter.rooms.get(auction_id);
     io.to(auction_id).emit("joined_room", {viewer_count: room?.size});
+    io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
   } catch (error) {
     console.log("Failed to join room");
   }
@@ -62,10 +65,21 @@ async function handleExitRoomEvent(data: any, socket: Socket) {
     const {auction_id} = data;
     socket.leave(auction_id);
     const room = io.sockets.adapter.rooms.get(auction_id);
-    socket.to(auction_id).emit("exited_room", {viewer_count: room?.size});
+    io.to(auction_id).emit("exited_room", {viewer_count: room?.size});
+    io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
   } catch (error) {
     console.log(error)
     console.log("Failed to exit room");
+  }
+}
+async function handleViewerCountEvent(data: any, socket: Socket){
+  try {
+    const {auction_id} = data;
+    const room = io.sockets.adapter.rooms.get(auction_id);
+    io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
+  } catch (error) {
+    console.log(error)
+    console.log("Failed to count viewers");
   }
 }
 /**Websocket Event Listeners**/
@@ -78,6 +92,9 @@ io.on("connection", (socket) => {
   });
   socket.on("sending_bid", (data) => {
     handleSendBidEvent(data, socket);
+  });
+  socket.on("getting_viewer_count", (data) => {
+    handleViewerCountEvent(data, socket);
   });
 })
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
@@ -115,14 +132,23 @@ app.post("/api/add-auction", async (req, res) => {
 });
 
 app.get("/api/check-bid-history/:auctionId", async (req, res) => {
-  let result;
+  const sqlGetBidHistory = 'SELECT * FROM user_bid WHERE auction_id = ?'
   try {
     const { auctionId } = req.params;
-    // console.log(auctionId);
-    result = await db.all("SELECT * FROM user_bid WHERE auction_id = ?", [auctionId]);
+    const result = await db.all(sqlGetBidHistory, [auctionId]);
     res.json(result);
   } catch (error) {
     console.error("Failed to check bid history with auction ID", error);
+    res.status(500).json({ error: "Failed to check bid history" });
+  }
+});
+
+app.get("/api/check-top-bids", async (req, res) => {
+  const sqlGetTopBids = 'SELECT id, auction_id, MAX(price) AS price FROM user_bid GROUP BY auction_id';
+  try {
+    const result = await db.all(sqlGetTopBids);
+    res.json(result);
+  } catch (error) {
     res.status(500).json({ error: "Failed to check bid history" });
   }
 });
