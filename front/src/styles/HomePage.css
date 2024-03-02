@@ -1,7 +1,19 @@
 .homepage-container {
     background-color: black; /* Set the background color to black */
     height: 100vh; /* Make sure the container fills the whole viewport height */
+    width: 100%; /* Add this line to make sure it fills the width as well */
 }
-h1 {
-    color:orange
+
+html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+body {
+    background-color: black; /* Set the background color to black */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    min-height: 100vh; /* Ensure it is at least the height of the viewport */
+    width: 100%; /* Ensure it takes full width */
 }
+  

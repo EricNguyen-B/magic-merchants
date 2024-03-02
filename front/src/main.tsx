@@ -5,6 +5,7 @@ import { SocketProvider } from "./Context/SocketContext";
 import { ThemeProvider, createTheme, PaletteMode } from '@mui/material';
 import HomePage from "./Components/pages/HomePage";
 import AuctionRoom from './Components/pages/AuctionRoomPage';
+import BuyersPage from "./components/pages/BuyersPage";
 import SellersPage from "./Components/pages/SellersPage";
 
 const themeOptions = {
@@ -37,6 +38,10 @@ let router = createBrowserRouter([
     {
         path: "/sellers-page",
         element: <SellersPage />
+    },
+    {
+        path: "/buyers-page",
+        element: <BuyersPage />
     }
 ]);
 

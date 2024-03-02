@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import InputAdornment from '@mui/material/InputAdornment';
 
-export default function AuctionForm() {
+export default function SellerForm() {
   const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
   const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
   const [cardNameValue, setCardNameValue] = useState<string>("");
