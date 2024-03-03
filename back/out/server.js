@@ -48,6 +48,35 @@ async function handleJoinRoomEvent(data, socket) {
         console.log("Failed to join room");
     }
 }
+async function chatDisplay(data, socket) {
+    try {
+    }
+    catch (error) {
+    }
+}
+async function handleSendMessageEvent(data, socket) {
+    try {
+        console.log("message sent");
+        const { text_message, auction_id } = data;
+        console.log(text_message);
+        const newMessageId = uuid();
+        await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
+        io.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
+    }
+    catch (error) {
+        console.log("Failed to send message", error);
+    }
+}
+// async function handleJoinChatRoomEvent(data: any, socket: Socket) {
+//   try {
+//       const { roomId } = data;
+//       socket.join(roomId);
+//       const room = io.sockets.adapter.rooms.get(roomId);
+//       console.log(`User ${socket.id} joined chat room: ${roomId}`);
+//   } catch (error) {
+//       console.log("Failed to join chat room", error);
+//   }
+// }
 async function handleLeaveRoomEvent(data, socket) {
 }
 /**Websocket Event Listeners**/
@@ -59,8 +88,25 @@ io.on("connection", (socket) => {
     socket.on("sending_bid", (data) => {
         handleSendBidEvent(data, socket);
     });
+    // socket.on("join_chat_room", (data) =>{ 
+    //   handleJoinChatRoomEvent(data, socket)
+    // });
+    socket.on("send_message", (data) => {
+        handleSendMessageEvent(data, socket);
+    });
 });
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
+app.get("/api/chat-history/:auctionId", async (req, res) => {
+    try {
+        const { auctionId } = req.params;
+        const messages = await db.all("SELECT * FROM chat_messages WHERE auction_id = ?", auctionId);
+        res.json(messages);
+    }
+    catch (error) {
+        console.error("Failed to fetch chat history", error);
+        res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+});
 app.get("/api/check-active-rooms", async (req, res) => {
     let result;
     try {
