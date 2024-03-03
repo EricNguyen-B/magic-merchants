@@ -1,43 +1,43 @@
-.chatbox-container {
+.app-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+  }
+  
+  .chatbox-container {
     display: flex;
     flex-direction: column;
-    max-height: 500px;
+    height: 100%; /* Takes full height of its parent */
+    flex: 1; /* Takes up 1/3 of the space */
     border: 1px solid #ccc;
     border-radius: 4px;
     overflow: hidden;
-    position: fixed; /* Fixed positioning to stick it on the right */
-    right: 20px; /* Right offset */
-    bottom: 20px; /* Bottom offset to not stick directly to the screen edge */
-    width: 300px; /* Adjust width as needed */
-}
-
-/* Style for the list containing messages */
-.chatbox-messages {
+    width: 75%; /* Takes up 1/3 of the screen */
+  }
+  
+  /* Rest of your styles unchanged */
+  .chatbox-messages {
     overflow-y: auto;
     flex-grow: 1;
-    background-color: #f0f0f0; /* Light grey background for the messages list */
-}
-
-/* Individual list items */
-.chatbox-message {
-    padding: 10px; /* Adds some spacing around messages */
-}
-
-/* Input area styling */
-.chatbox-input-area {
+    background-color: #f0f0f0;
+  }
+  
+  .chatbox-message {
+    padding: 10px;
+  }
+  
+  .chatbox-input-area {
     display: flex;
     padding: 10px;
     border-top: 1px solid #ccc;
     align-items: center;
-}
-
-/* Input field styling */
-.chatbox-input {
+  }
+  
+  .chatbox-input {
     margin-right: 10px;
-    flex-grow: 1; /* Makes input take available space */
-}
-
-/* Send button styling */
-.chatbox-send-button {
-    height: 56px; /* Ensures alignment with input field */
-}
+    flex-grow: 1;
+  }
+  
+  .chatbox-send-button {
+    height: 56px;
+  }

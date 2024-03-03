@@ -1,0 +1,16 @@
+.auction-room-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; 
+}
+
+.content-area {
+    flex: 2; 
+    overflow: auto; 
+}
+
+
+.chatbox-container {
+    flex: 1; 
+    height: 100%; 
+}

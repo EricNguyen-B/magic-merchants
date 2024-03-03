@@ -1,4 +1,5 @@
 import express from "express";
+// import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
@@ -48,10 +49,16 @@ async function handleJoinRoomEvent(data, socket) {
         console.log("Failed to join room");
     }
 }
-async function chatDisplay(data, socket) {
+async function handleJoinChatRoomEvent(data, socket) {
     try {
+        const { auction_id } = data;
+        console.log(`User ${socket.id} joined chat room: ${auction_id}`);
+        socket.join(auction_id);
+        // Emit message to all clients in the room, including the sender
+        io.to(auction_id).emit("user_joined", `User ${socket.id} joined chat room: ${auction_id}`);
     }
     catch (error) {
+        console.log("Failed to join chat room", error);
     }
 }
 async function handleSendMessageEvent(data, socket) {
@@ -67,18 +74,6 @@ async function handleSendMessageEvent(data, socket) {
         console.log("Failed to send message", error);
     }
 }
-// async function handleJoinChatRoomEvent(data: any, socket: Socket) {
-//   try {
-//       const { roomId } = data;
-//       socket.join(roomId);
-//       const room = io.sockets.adapter.rooms.get(roomId);
-//       console.log(`User ${socket.id} joined chat room: ${roomId}`);
-//   } catch (error) {
-//       console.log("Failed to join chat room", error);
-//   }
-// }
-async function handleLeaveRoomEvent(data, socket) {
-}
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
     //console.log(`User Connected: ${socket.id}`);
@@ -88,9 +83,9 @@ io.on("connection", (socket) => {
     socket.on("sending_bid", (data) => {
         handleSendBidEvent(data, socket);
     });
-    // socket.on("join_chat_room", (data) =>{ 
-    //   handleJoinChatRoomEvent(data, socket)
-    // });
+    socket.on("join_chat_room", (data) => {
+        handleJoinChatRoomEvent(data, socket);
+    });
     socket.on("send_message", (data) => {
         handleSendMessageEvent(data, socket);
     });
