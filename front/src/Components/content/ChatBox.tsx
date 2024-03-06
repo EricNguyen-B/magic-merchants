@@ -21,21 +21,25 @@ const ChatBox= (room: Room) => {
   const scrollToBottom = useCallback((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
-  useEffect(scrollToBottom, [messages]);
-  
-  const handleSendMessage = (): void => {
-    if (!newMessage.trim()) return;
 
+  //Scrolling
+  useEffect(scrollToBottom, [messages]);
+const handleSendMessage = (): void => {
+    if (!newMessage.trim()) return;
     const newMessageObj: Message = {
       message_id: `user-${Date.now()}`, // Improved ID generation
       text_message: newMessage,
       type: 'user_message',
     };
-
     setMessages((prevMessages) => [...prevMessages, newMessageObj]);
     socket?.emit('send_message', { text_message: newMessage, auction_id: room.id });
     setNewMessage('');
   };
+
+  //socket
+  useEffect(() => {
+    socket?.on("received_message", (data) => {setMessages((prevMessages) => [...prevMessages, data]);})
+    },[socket]);
 
   // Function to render each message
   const renderMessage = useCallback((message: Message) => (

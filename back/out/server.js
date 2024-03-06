@@ -60,18 +60,6 @@ async function handleJoinRoomEvent(data, socket) {
         console.log("Failed to join room");
     }
 }
-async function handleJoinChatRoomEvent(data, socket) {
-    try {
-        const { auction_id } = data;
-        console.log(`User ${socket.id} joined chat room: ${auction_id}`);
-        socket.join(auction_id);
-        // Emit message to all clients in the room, including the sender
-        io.to(auction_id).emit("user_joined", `User ${socket.id} joined chat room: ${auction_id}`);
-    }
-    catch (error) {
-        console.log("Failed to join chat room", error);
-    }
-}
 async function handleExitRoomEvent(data, socket) {
     try {
         const { auction_id } = data;
@@ -102,8 +90,9 @@ async function handleSendMessageEvent(data, socket) {
         const { text_message, auction_id } = data;
         console.log(text_message);
         const newMessageId = uuid();
+        console.log(auction_id);
         await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
-        io.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
+        socket.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
     }
     catch (error) {
         console.log("Failed to send message", error);
@@ -119,9 +108,6 @@ io.on("connection", (socket) => {
     });
     socket.on("sending_bid", (data) => {
         handleSendBidEvent(data, socket);
-    });
-    socket.on("join_chat_room", (data) => {
-        handleJoinChatRoomEvent(data, socket);
     });
     socket.on("send_message", (data) => {
         handleSendMessageEvent(data, socket);
