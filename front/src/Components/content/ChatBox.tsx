@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { Box, TextField, Button, List, ListItem, Typography } from '@mui/material';
 import io from 'socket.io-client';
-import './ChatBoxStyles.css';
-
-const socket = io('http://localhost:3000');
+import '../ChatBoxStyles.css';
+import { SocketContext } from '../../Context/SocketContext';
+import {Room} from '../../types';
+import AuctionRoom from '../pages/AuctionRoomPage';
 
 interface Message {
   message_id: string;
@@ -11,49 +12,17 @@ interface Message {
   type?: 'user_message' | 'system_message';
 }
 
-// Custom hook for setting up and cleaning up socket listeners
-function useSocketListeners(setMessages: React.Dispatch<React.SetStateAction<Message[]>>) {
-  useEffect(() => {
-    console.log('Setting up socket listeners');
-    const handleReceivedMessage = (message: Message) => {
-      console.log('Received message:', message);
-      setMessages((prevMessages) => [...prevMessages, message]);
-    };
-
-    const handleUserJoined = (message: string) => {
-      console.log('User joined:', message);
-      const systemMessage: Message = {
-        message_id: `system-${Date.now()}`, // Improved ID generation
-        text_message: message,
-        type: 'system_message',
-      };
-      setMessages((prevMessages) => [...prevMessages, systemMessage]);
-    };
-
-    socket.on('received_message', handleReceivedMessage);
-    socket.on('user_joined', handleUserJoined);
-
-    return () => {
-      console.log('Cleaning up socket listeners');
-      socket.off('received_message', handleReceivedMessage);
-      socket.off('user_joined', handleUserJoined);
-    };
-  }, [setMessages]);
-}
-
-const ChatBox: React.FC = () => {
+const ChatBox= (room: Room) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  useSocketListeners(setMessages); // Use the custom hook
+  const socket = useContext(SocketContext).socket;
 
   const scrollToBottom = useCallback((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
-
   useEffect(scrollToBottom, [messages]);
-
+  
   const handleSendMessage = (): void => {
     if (!newMessage.trim()) return;
 
@@ -64,7 +33,7 @@ const ChatBox: React.FC = () => {
     };
 
     setMessages((prevMessages) => [...prevMessages, newMessageObj]);
-    socket.emit('send_message', { text_message: newMessage, auction_id: 'yourRoomId' });
+    socket?.emit('send_message', { text_message: newMessage, auction_id: room.id });
     setNewMessage('');
   };
 

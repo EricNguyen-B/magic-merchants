@@ -72,17 +72,6 @@ async function handleJoinChatRoomEvent(data, socket) {
         console.log("Failed to join chat room", error);
     }
 }
-async function handleSendMessageEvent(data, socket) {
-    try {
-        console.log("message sent");
-        const { text_message, auction_id } = data;
-        console.log(text_message);
-        const newMessageId = uuid();
-        await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
-        io.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
-    }
-    catch (error) {
-        console.log("Failed to send message", error);
 async function handleExitRoomEvent(data, socket) {
     try {
         const { auction_id } = data;
@@ -107,6 +96,19 @@ async function handleViewerCountEvent(data, socket) {
         console.log("Failed to count viewers");
     }
 }
+async function handleSendMessageEvent(data, socket) {
+    try {
+        console.log("message sent");
+        const { text_message, auction_id } = data;
+        console.log(text_message);
+        const newMessageId = uuid();
+        await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
+        io.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
+    }
+    catch (error) {
+        console.log("Failed to send message", error);
+    }
+}
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
     socket.on("joining_room", (data) => {
@@ -123,6 +125,7 @@ io.on("connection", (socket) => {
     });
     socket.on("send_message", (data) => {
         handleSendMessageEvent(data, socket);
+    });
     socket.on("getting_viewer_count", (data) => {
         handleViewerCountEvent(data, socket);
     });

@@ -70,6 +70,8 @@ async function handleJoinChatRoomEvent(data: any, socket: Socket) {
       io.to(auction_id).emit("user_joined", `User ${socket.id} joined chat room: ${auction_id}`);
   } catch (error) {
       console.log("Failed to join chat room", error);
+  }
+}
 async function handleExitRoomEvent(data: any, socket: Socket) {
   try {
     const {auction_id} = data;
