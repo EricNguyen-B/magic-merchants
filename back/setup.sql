@@ -17,6 +17,12 @@ CREATE TABLE user_bid (
     FOREIGN KEY(auction_id) REFERENCES auction_room(id)
 );
 
+CREATE TABLE users (
+    email TEXT PRIMARY KEY,
+    username TEXT,
+    password TEXT
+);
+
 -- Mock data for auction_room
 INSERT INTO auction_room (id, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments)
 VALUES
@@ -25,3 +31,5 @@ VALUES
     ('3', 'Venusaur', 'Good', '2024-03-08T00:00:00.000Z', '2024-03-18T00:00:00.000Z', 60, 3), -- start: '2024-03-08' end: '2024-03-18'
     ('4', 'Pikachu', 'Fair', '2024-03-12T00:00:00.000Z', '2024-03-22T00:00:00.000Z', 40, 2), -- start: '2024-03-12' end: '2024-03-22'
     ('5', 'Pikachu', 'Fair', '2024-02-12T00:00:00.000Z', '2024-03-01T00:00:00.000Z', 40, 2); -- start: '2024-02-12' end: '2024-03-01'
+-- Mock data for users
+INSERT INTO users (email, username, password) VALUES ('test@gmail.com', 'test', '$argon2id$v=19$m=65536,t=3,p=4$bUh1kmZxbTnh+qc9fQHfgQ$fjFXy9u5CVMcuhsgk1JT4jAkUYsmf2HNfsbdf7Ab6sk');
