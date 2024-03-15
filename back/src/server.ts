@@ -22,22 +22,8 @@ let db = await open({
 
 const app = express();
 const server = http.createServer(app);
-const allowedOrigins = ["http://localhost:5173", "http://localhost:4173", "http://localhost:8000", process.env.CORS_ORIGIN];
-const io = new Server(server, {
-    cors: {
-      origin: (origin, callback) => {
-          if (!origin || allowedOrigins.includes(origin)) {
-              callback(null, true);
-          }else {
-              callback(new Error('Not allowed by CORS'));
-          }
-        },
-      methods: ["GET", "POST"],
-      credentials: true
-    }
-});
+const io = new Server(server);
 app.use(cors());
-app.use(express.static('../../front/dist'));
 app.use(express.json({ limit: "1kb" }));
 const auctionEventScheduler = new AuctionEventScheduler(db, io);
 auctionEventScheduler.onStartScheduleEvents();

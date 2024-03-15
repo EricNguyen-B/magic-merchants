@@ -20,7 +20,7 @@ export default function AuctionForm() {
   const handleSubmit = async function(){
     console.log("Submit Clicked");
     try{
-      await axios.post("/api/add-auction", {
+      await axios.post("https://magic-merchants-16edcf281bcc.herokuapp.com/api/add-auction", {
         dateStart: startDateValue,
         dateEnd: endDateValue,
         cardName: cardNameValue,

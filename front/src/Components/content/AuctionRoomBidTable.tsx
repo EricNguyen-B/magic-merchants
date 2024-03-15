@@ -15,7 +15,7 @@ const BidHistoryTable = (room: Room) => {
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
 
   const checkBidHistory = async () => {
-    const response = await axios.get(`/api/check-bid-history/${room.id}`);
+    const response = await axios.get(`https://magic-merchants-16edcf281bcc.herokuapp.com/api/check-bid-history/${room.id}`);
     console.log(response.data)
     setHistoricalBids(response.data);
   }
