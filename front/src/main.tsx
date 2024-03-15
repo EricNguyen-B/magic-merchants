@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode, useEffect} from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { SocketProvider } from "./Context/SocketContext";
@@ -6,6 +6,38 @@ import { ThemeProvider, createTheme, PaletteMode } from '@mui/material';
 import HomePage from "./Components/pages/HomePage";
 import AuctionRoom from './Components/pages/AuctionRoomPage';
 import SellersPage from "./Components/pages/SellersPage";
+import LoginPage from "./Components/pages/LoginPage";
+import RegisterPage from "./Components/pages/RegisterPage";
+import { Link, Navigate, Outlet } from "react-router-dom";
+import { useCookies, CookiesProvider } from "react-cookie";
+
+interface PrivateRouteProps {
+    privateContent: ReactNode;
+    publicContent: ReactNode;
+}
+
+function Layout() {
+    let [cookies, setCookies] = useCookies(['logged_in']);
+    useEffect(() => {
+        if (cookies.logged_in === undefined){
+            console.log("Cookie doesn't exists. Setting one now");
+            setCookies('logged_in', false);
+        }
+    })
+    return (
+        <CookiesProvider>
+            <div className="page-layout">
+                <main className="main-body">
+                    <Outlet />
+                </main>
+            </div>
+        </CookiesProvider>
+    );
+}
+const PrivateRoute:React.FC<PrivateRouteProps> = ({privateContent, publicContent}) => {
+    let [cookies] = useCookies(['logged_in']);
+    return (cookies.logged_in? <>{privateContent}</>: <>{publicContent}</>);
+}
 
 const themeOptions = {
     palette: {
@@ -27,17 +59,31 @@ const theme = createTheme(themeOptions);
 
 let router = createBrowserRouter([
     {
-        path: "/",
-        element: <HomePage />
-    },
-    {
-        path: "/auction-room",
-        element: <AuctionRoom />
-    },
-    {
-        path: "/sellers-page",
-        element: <SellersPage />
+        element: <Layout/>,
+        children: [
+            {
+                path: "/",
+                element: <PrivateRoute privateContent={<HomePage/>} publicContent={<LoginPage/>}/>
+            },
+            {
+                path:"/register",
+                element: <RegisterPage/>
+            },
+            {
+                path: "/auction-room",
+                element: <PrivateRoute privateContent={<AuctionRoom/>} publicContent={<LoginPage/>}/>
+            },
+            {
+                path: "/sellers-page",
+                element: <PrivateRoute privateContent={<SellersPage/>} publicContent={<LoginPage/>}/>
+            },
+            {
+                path: "*",
+                element: <LoginPage/>
+            }
+        ]
     }
+    
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
