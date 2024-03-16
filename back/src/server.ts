@@ -9,6 +9,8 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
+import {Authenicator} from "./authenticators.js";
+import cookieParser from "cookie-parser";
 import { AuctionEventScheduler } from "./schedules.js";
 
 dotenv.config({path: '../.env'});
@@ -20,11 +22,13 @@ let db = await open({
     driver: sqlite3.Database,
 });
 
+await db.get("PRAGMA foreign_keys = ON");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(cors());
 app.use(express.json({ limit: "1kb" }));
+const authenicator = new Authenicator(db);
 const auctionEventScheduler = new AuctionEventScheduler(db, io);
 auctionEventScheduler.onStartScheduleEvents();
 
@@ -88,6 +92,11 @@ io.on("connection", (socket) => {
     handleViewerCountEvent(data, socket);
   });
 })
+
+app.post("/api/login", (req, res) => authenicator.login(req, res));
+app.post("/api/register", (req, res) => authenicator.register(req, res));
+app.post("/api/logout", (req, res) => authenicator.logout(req, res));
+app.get("/api/authCookie", authenicator.authorize, (req, res, next) => authenicator.privateAPI(req, res));
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
 app.get("/api/check-active-rooms", async (req, res) => {
   let result;
