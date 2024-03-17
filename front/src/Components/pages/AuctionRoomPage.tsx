@@ -2,12 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 import {SocketContext} from '../../Context/SocketContext'
 import { useLocation } from 'react-router-dom';
 import BidHistoryTable from "../content/AuctionRoomBidTable";
+import ChatBox from "../content/ChatBox";
 import TimerCountDown from '../common/Timer';
 import { Room } from '../../types';
 import Navbar from "../common/Navbar";
 import {TextField, FormControl, Button, Grid} from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
+
 
 const AuctionRoom = () => {
     const socket = useContext(SocketContext).socket;
@@ -71,6 +73,7 @@ const AuctionRoom = () => {
                 variant="contained">Submit
             </Button>
             <BidHistoryTable {...room} />
+            <ChatBox {...room} />
         </Grid>
     );
 }

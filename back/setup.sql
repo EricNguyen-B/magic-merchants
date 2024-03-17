@@ -16,6 +16,12 @@ CREATE TABLE user_bid (
     price INTEGER,
     FOREIGN KEY(auction_id) REFERENCES auction_room(id)
 );
+CREATE TABLE chat_messages (
+    message_id TEXT PRIMARY KEY,
+    text_message TEXT,
+    auction_id TEXT,
+    FOREIGN KEY(auction_id) REFERENCES auction_room(id)
+);
 
 CREATE TABLE users (
     email TEXT PRIMARY KEY,
