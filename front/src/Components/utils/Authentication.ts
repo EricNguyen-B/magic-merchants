@@ -1,8 +1,9 @@
 import axios from "axios";
+import * as ENV from '../utils/Environment';
 
 async function registerUser(accountData: FormData): Promise<boolean>{
     try{
-        let data = await axios.post("/api/register", {
+        let data = await axios.post(`${ENV.getServerURL()}/api/register`, {
             email: accountData.get('email'),
             username: `${accountData.get('firstName')} ${accountData.get('lastName')}`,
             password: accountData.get('password')
@@ -22,7 +23,7 @@ async function registerUser(accountData: FormData): Promise<boolean>{
 }
 async function authenticateUser(credentials: FormData): Promise<boolean>{
     try{
-        let data = await axios.post("/api/login", {
+        let data = await axios.post(`${ENV.getServerURL()}/api/login`, {
           email: credentials.get('email'),
           password: credentials.get('password')
         }, {withCredentials: true});
@@ -41,7 +42,7 @@ async function authenticateUser(credentials: FormData): Promise<boolean>{
 }
 async function logoutUser(): Promise<boolean>{
     try{
-        let data = await axios.post("/api/logout", {withCredentials: true});
+        let data = await axios.post(`${ENV.getServerURL()}/api/logout`, {withCredentials: true});
         console.log(data.status)
         if (data.status === 200){
             console.log("Logout Success");
@@ -57,7 +58,7 @@ async function logoutUser(): Promise<boolean>{
 }
 async function authenticateCookie(): Promise<boolean>{
     try{
-        let data = await axios.get("/api/authCookie", {withCredentials: true});
+        let data = await axios.get(`${ENV.getServerURL()}/api/authCookie`, {withCredentials: true});
         if (data.status === 200){
             console.log("Cookie Authentication Success");
             return true;

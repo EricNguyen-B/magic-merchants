@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import RoomCard from './RoomCard';
 import { Room, Bid } from '../../types';
 import {SocketContext} from '../../Context/SocketContext'
+import * as ENV from '../utils/Environment';
 
 export default function RoomsGrid() {
     const socket = useContext(SocketContext).socket;
@@ -12,11 +13,11 @@ export default function RoomsGrid() {
     const [topBids, setTopBids] = useState<Bid[]>([]);
 
     const checkTopBids = async () => {
-        const response = await axios.get("https://magic-merchants-16edcf281bcc.herokuapp.com/api/check-top-bids");
+        const response = await axios.get(`${ENV.getServerURL()}/api/check-top-bids`);
         setTopBids(response.data);
     }
     const checkActiveRooms = async () => {
-        const response = await axios.get(`https://magic-merchants-16edcf281bcc.herokuapp.com/api/check-active-rooms`);
+        const response = await axios.get(`${ENV.getServerURL()}/api/check-active-rooms`);
         setRooms(response.data);
     }
     /**Listen for Auction Room Changes**/

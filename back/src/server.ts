@@ -26,7 +26,12 @@ await db.get("PRAGMA foreign_keys = ON");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-app.use(cors());
+const corsOptions = {
+  origin: "https://65f61e1914875808d3079c84--magic-merchants.netlify.app",
+  credentials: true
+}
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json({ limit: "1kb" }));
 const authenicator = new Authenicator(db);
 const auctionEventScheduler = new AuctionEventScheduler(db, io);

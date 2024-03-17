@@ -1,9 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import {io, Socket} from 'socket.io-client';
-
-const port = import.meta.env.VITE_REACT_PORT;
-const host = import.meta.env.VITE_REACT_HOST;
-const protocal = import.meta.env.VITE_REACT_PROTOCAL;
+import * as ENV from '../Components/utils/Environment';
 
 interface contextType {
     socket: Socket | null;
@@ -12,7 +9,7 @@ export const SocketContext = createContext<contextType>({socket: null});
 export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     useEffect(() => {
-        const newSocket = io(`https://magic-merchants-16edcf281bcc.herokuapp.com/`, {
+        const newSocket = io(`${ENV.getServerURL()}/`, {
             transports: ['websocket'],
             withCredentials: true,
         });

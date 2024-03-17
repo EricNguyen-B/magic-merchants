@@ -15,7 +15,7 @@ export default ({ mode }) => {
         plugins: [react(), eslint({ lintOnStart: true })],
         server: {
             proxy: {
-                "/api": "https://magic-merchants-16edcf281bcc.herokuapp.com/",
+                "/api": "",
             },
         },
     });

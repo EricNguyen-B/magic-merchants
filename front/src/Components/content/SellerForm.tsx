@@ -8,6 +8,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import InputAdornment from '@mui/material/InputAdornment';
+import * as ENV from '../utils/Environment';
 
 export default function AuctionForm() {
   const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
@@ -20,7 +21,7 @@ export default function AuctionForm() {
   const handleSubmit = async function(){
     console.log("Submit Clicked");
     try{
-      await axios.post("https://magic-merchants-16edcf281bcc.herokuapp.com/api/add-auction", {
+      await axios.post(`${ENV.getServerURL()}/api/add-auction`, {
         dateStart: startDateValue,
         dateEnd: endDateValue,
         cardName: cardNameValue,
