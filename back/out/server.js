@@ -1,4 +1,5 @@
 import express from "express";
+// import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
@@ -88,6 +89,20 @@ async function handleViewerCountEvent(data, socket) {
         console.log("Failed to count viewers");
     }
 }
+async function handleSendMessageEvent(data, socket) {
+    try {
+        console.log("message sent");
+        const { text_message, auction_id } = data;
+        console.log(text_message);
+        const newMessageId = uuid();
+        console.log(auction_id);
+        await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
+        socket.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
+    }
+    catch (error) {
+        console.log("Failed to send message", error);
+    }
+}
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
     socket.on("joining_room", (data) => {
@@ -99,6 +114,9 @@ io.on("connection", (socket) => {
     socket.on("sending_bid", (data) => {
         handleSendBidEvent(data, socket);
     });
+    socket.on("send_message", (data) => {
+        handleSendMessageEvent(data, socket);
+    });
     socket.on("getting_viewer_count", (data) => {
         handleViewerCountEvent(data, socket);
     });
@@ -108,6 +126,17 @@ app.post("/api/register", (req, res) => authenicator.register(req, res));
 app.post("/api/logout", (req, res) => authenicator.logout(req, res));
 app.get("/api/authCookie", authenicator.authorize, (req, res, next) => authenicator.privateAPI(req, res));
 // TO DO: resolve errors with useEffect hook checking active rooms on the main page
+app.get("/api/chat-history/:auctionId", async (req, res) => {
+    try {
+        const { auctionId } = req.params;
+        const messages = await db.all("SELECT * FROM chat_messages WHERE auction_id = ?", auctionId);
+        res.json(messages);
+    }
+    catch (error) {
+        console.error("Failed to fetch chat history", error);
+        res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+});
 app.get("/api/check-active-rooms", async (req, res) => {
     let result;
     try {
