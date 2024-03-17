@@ -44,9 +44,8 @@ const BidHistoryTable = (room: Room) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {
-            historicalBids.map((bid: Bid, index: number) => (
-              <TableRow key={index}> 
+            {historicalBids.map((bid: Bid, index: number) => (
+              <TableRow key={index}>
                 <TableCell>{bid.id}</TableCell>
                 <TableCell>{bid.auction_id}</TableCell>
                 <TableCell>{bid.price}</TableCell>

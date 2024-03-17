@@ -1,15 +1,51 @@
+
 .auction-room-container {
-    display: flex;
-    flex-direction: row;
-    height: 100vh; 
+  display: flex;
+  flex-direction: row;
+  height: 100vh; /* Ensures full viewport height */
+  width: 100vw; /* Ensures full viewport width */
 }
 
 .content-area {
-    flex: 2; 
-    overflow: auto; 
+  flex-basis: 66%; /* Sets base size to 66% of the parent container */
+  max-width: 66%; /* Ensures content area doesn't grow beyond 66% */
+  overflow: auto; /* Allows scrolling within content area */
 }
 
 .chatbox-container {
-    flex: 1; 
-    height: 100%; 
+  display: flex;
+  flex-direction: column;
+  flex-basis: 33%; /* Sets base size to 33% of the parent container */
+  max-width: 100%; /* Ensures chatbox doesn't grow beyond 33% */
+  height: 230%;
+  border: 1px solid #757575;
+  border-radius: 4px;
+  overflow: hidden;
+}
+/* No changes needed below this line, keep your previous styles as they are */
+.chatbox-messages {
+  overflow-y: auto;
+  flex-grow: 1;
+  background-color: #0a0a0a;
+  order: -1;
+}
+
+.chatbox-message {
+  padding: 10px;
+}
+
+.chatbox-input-area {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #000000;
+  align-items: center;
+}
+
+.chatbox-input {
+  margin-right: auto;
+  flex-grow: 1;
+}
+
+.chatbox-send-button {
+  height: 56px;
 }

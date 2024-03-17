@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { Box, TextField, Button, List, ListItem, Typography } from '@mui/material';
-import io from 'socket.io-client';
-import '../ChatBoxStyles.css';
+import '../AuctionRoomStyles.css';
 import { SocketContext } from '../../Context/SocketContext';
 import {Room} from '../../types';
-import AuctionRoom from '../pages/AuctionRoomPage';
 
 interface Message {
   message_id: string;

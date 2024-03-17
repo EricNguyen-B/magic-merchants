@@ -72,8 +72,15 @@ const AuctionRoom = () => {
                 onClick={handleSubmitBid} 
                 variant="contained">Submit
             </Button>
-            <BidHistoryTable {...room} />
-            <ChatBox {...room} />
+            <div className="auction-room-container">
+                <div className="content-area">
+                    <BidHistoryTable {...room} />
+                </div>
+                <div className="chatbox-container">
+                    {/* ChatBox component */}
+                    <ChatBox {...room} />
+                </div>
+            </div>
         </Grid>
     );
 }
