@@ -27,7 +27,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const corsOptions = {
-  origin: "https://65f61e1914875808d3079c84--magic-merchants.netlify.app",
+  origin: ["https://65f61e1914875808d3079c84--magic-merchants.netlify.app", "http://localhost:5173"],
   credentials: true
 }
 app.use(cors(corsOptions));
