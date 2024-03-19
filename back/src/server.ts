@@ -1,5 +1,4 @@
 import express, { application, Response } from "express";
-// import { z } from "zod";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { v4 as uuid } from 'uuid';
@@ -11,6 +10,7 @@ import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
 import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
+import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
 
 dotenv.config({path: '../.env'});
@@ -40,9 +40,9 @@ auctionEventScheduler.onStartScheduleEvents();
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data:any, socket: Socket) {
   try{
-    const {price, auction_id} = data;
+    const {price, auction_id, buyer_email} = data;
     const newBidId = uuid();
-    await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+    await db.run('INSERT INTO user_bid(id, buyer_email, auction_id, price) VALUES (?, ?, ?, ?)', [newBidId, buyer_email, auction_id, price]);
     io.to(auction_id).emit("recieved_bid", {bid_price: price}); 
     io.emit(`${auction_id}/recieved_bid`, {bid_price: price});
   }catch(error){
@@ -86,20 +86,26 @@ async function handleViewerCountEvent(data: any, socket: Socket){
 
 async function handleSendMessageEvent(data: any, socket: Socket) {
   try {
-      console.log("message sent");
-      const { text_message, auction_id } = data;
-      console.log(text_message);
+      const { text_message, auction_id, viewer_email} = data;
       const newMessageId = uuid();
-      console.log(auction_id)
-      await db.run('INSERT INTO chat_messages (message_id, text_message, auction_id) VALUES (?, ?, ?)', [newMessageId, text_message, auction_id]);
+      await db.run('INSERT INTO chat_messages (message_id, viewer_email, text_message, auction_id) VALUES (?, ?, ?, ?)', [newMessageId, viewer_email, text_message, auction_id]);
       socket.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
   } catch (error) {
       console.log("Failed to send message", error);
   }
 }
-
-
-
+/**Websocket Middleware For Authentication**/
+io.use((socket, next) => {
+  authenicator.authorizeSocketConnection(socket, (error?: Error) => {
+    if (error){
+      console.error('Unauthorized socket connection:', error.message);
+      socket.disconnect(true);
+    }
+    else{
+      next();
+    }
+  })
+});
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => { 
   socket.on("joining_room", (data) => {
@@ -149,15 +155,15 @@ app.get("/api/check-active-rooms", async (req, res) => {
 app.post("/api/add-auction", async (req, res) => {
     const sqlCreateAuctionQuery = 
       `INSERT INTO auction_room 
-      (id, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
       /**Validate Request Schema**/
-      const {dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement} = schemas.auctionSchema.parse(req.body);
+      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement} = schemas.auctionSchema.parse(req.body);
       /**generate Auction ID**/
       const auctionID = uuid();
       /**Run Auction Query and Then Schedule Event**/
-      await db.run(sqlCreateAuctionQuery, [auctionID, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
+      await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
         .then(() => {
           auctionEventScheduler.scheduleEvent(auctionID, dateStart, dateEnd);
         });
@@ -181,7 +187,7 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
 });
 
 app.get("/api/check-top-bids", async (req, res) => {
-  const sqlGetTopBids = 'SELECT id, auction_id, MAX(price) AS price FROM user_bid GROUP BY auction_id';
+  const sqlGetTopBids = 'SELECT id, buyer_email, auction_id, MAX(price) AS price FROM user_bid GROUP BY auction_id';
   try {
     const result = await db.all(sqlGetTopBids);
     res.json(result);

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { Box, TextField, Button, List, ListItem, Typography } from '@mui/material';
-import '../AuctionRoomStyles.css';
+import '../../styles/AuctionRoomStyles.css';
 import { SocketContext } from '../../Context/SocketContext';
 import {Room} from '../../types';
+import { useCookies } from 'react-cookie';
 
 interface Message {
   message_id: string;
@@ -11,6 +12,7 @@ interface Message {
 }
 
 const ChatBox= (room: Room) => {
+  const [cookies, setCookies] = useCookies(['user_email']);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -20,17 +22,16 @@ const ChatBox= (room: Room) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  //Scrolling
   useEffect(scrollToBottom, [messages]);
-const handleSendMessage = (): void => {
+  const handleSendMessage = (): void => {
     if (!newMessage.trim()) return;
     const newMessageObj: Message = {
-      message_id: `user-${Date.now()}`, // Improved ID generation
+      message_id: `user-${Date.now()}`, 
       text_message: newMessage,
       type: 'user_message',
     };
     setMessages((prevMessages) => [...prevMessages, newMessageObj]);
-    socket?.emit('send_message', { text_message: newMessage, auction_id: room.id });
+    socket?.emit('send_message', { text_message: newMessage, auction_id: room.id , viewer_id: cookies.user_email});
     setNewMessage('');
   };
 

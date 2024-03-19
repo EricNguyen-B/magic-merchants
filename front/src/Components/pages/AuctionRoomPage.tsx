@@ -9,9 +9,11 @@ import Navbar from "../common/Navbar";
 import {TextField, FormControl, Button, Grid} from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
+import { useCookies } from 'react-cookie';
 
 
 const AuctionRoom = () => {
+    const [cookies] = useCookies(['user_email']);
     const socket = useContext(SocketContext).socket;
     const location = useLocation();
     const room: Room = location.state;
@@ -19,7 +21,7 @@ const AuctionRoom = () => {
     const [viewerCount, setViewerCount] = useState<number>(0);
 
     const handleSubmitBid = () => {
-        socket?.emit("sending_bid", {price: parseInt(bidPrice), auction_id: room.id});
+        socket?.emit("sending_bid", {price: parseInt(bidPrice), auction_id: room.id, buyer_email: cookies.user_email});
       }
     /**Join Room of Auction ID**/
     useEffect(() => {

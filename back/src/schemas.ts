@@ -11,6 +11,7 @@ export const registerSchema = z.object({
     password: z.string().min(1),
 });
 export const auctionSchema = z.object({
+    sellerEmail: z.string(),
     dateStart: z.coerce.date(),
     dateEnd: z.coerce.date(),
     cardName: z.string(),

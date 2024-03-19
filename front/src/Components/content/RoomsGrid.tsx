@@ -51,7 +51,7 @@ export default function RoomsGrid() {
                             <RoomCard 
                                 room={room} 
                                 bid={topBids.find(bid => bid.auction_id === room.id) || 
-                                    { id: '', auction_id: '', price: 0 }}
+                                    { id: '', buyer_email: '', auction_id: '', price: 0 }}
                             />
                         </Grid>
                     ))
