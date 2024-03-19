@@ -19,6 +19,7 @@ export default function AuctionForm() {
   const [cardConditionValue, setCardConditionValue] = useState<string>("");
   const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
   const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
+  
   /**Handle Form Submission**/
   const handleSubmit = async function(){
     console.log("Submit Clicked");
@@ -51,7 +52,6 @@ export default function AuctionForm() {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of MTG cards**/}
           <TextField
             required
             id="mtg-card-name"
@@ -62,7 +62,6 @@ export default function AuctionForm() {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of conditions**/}
           <TextField
             required
             id="mtg-card-condition"

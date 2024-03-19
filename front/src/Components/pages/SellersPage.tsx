@@ -1,8 +1,7 @@
 import Navbar from "../common/Navbar";
-import AuctionForm from "../content/SellerForm";
 import { Grid } from "@mui/material";
 import '../../styles/HomePage.css';
-import TestForm from "../content/TestForm";
+import SellerTabs from "../content/SellerTabs";
 
 const SellersPage = () => {
     return (
@@ -10,10 +9,8 @@ const SellersPage = () => {
             <Grid item>
                 <Navbar />
             </Grid>
-            <Grid 
-                style={{ flexGrow: 1 }} 
-            >
-                <TestForm />
+            <Grid style={{ flexGrow: 1 }} >
+                <SellerTabs />
             </Grid>
         </Grid>
     )

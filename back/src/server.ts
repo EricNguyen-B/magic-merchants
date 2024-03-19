@@ -202,4 +202,68 @@ const protocal = process.env.PROTOCAL;
 
 server.listen(port, () => {
   console.log(`${protocal}://${host}:${port}`);
+interface MTGSet {
+  code: string;
+  name: string;
+}
+
+interface MTGCard {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
+
+app.get("/api/get-sets", async (req, res) => {
+  try {
+    const response = await axios.get("https://api.magicthegathering.io/v1/sets");
+    if (response.data && response.data.sets) {
+      const sets = response.data.sets.map((set: MTGSet) => ({
+        code: set.code,
+        name: set.name
+      }));
+      res.json(sets);
+    } else {
+      res.status(404).json({ error: "No sets found" });
+    }
+  } catch (error) {
+    console.error("Failed to get card sets", error);
+    res.status(500).json({ error: "Failed to get card sets" });
+  }
+});
+
+app.get("/api/get-card-image/:cardName", async (req, res) => {
+  try {
+    const { cardName } = req.params;
+    const result = await axios.get(`https://api.magicthegathering.io/v1/cards?name=${cardName}`);
+    const imageUrl = result.data.cards[0]?.imageUrl;
+    res.json({ imageUrl }); 
+  } catch (error) {
+    console.error(`Failed to get image for card ${req.params.cardName}`, error);
+    res.status(500).json({ error: "Failed to get card image" });
+  }
+});
+
+app.get("/api/get-cards/:setCode", async (req, res) => {
+  const { setCode } = req.params;
+  try {
+    const response = await axios.get(`https://api.magicthegathering.io/v1/cards?set=${setCode}`);
+    if (response.data && response.data.cards) {
+      const cards = response.data.cards.map((card: MTGCard) => ({
+        id: card.id, // Use a unique identifier here; id or multiverseid
+        name: card.name,
+        imageUrl: card.imageUrl // Ensure you're handling cases where some cards may not have an image
+      }));
+      res.json(cards);
+    } else {
+      res.status(404).json({ error: "No cards found for this set" });
+    }
+  } catch (error) {
+    console.error(`Failed to get cards for set ${setCode}`, error);
+    res.status(500).json({ error: `Failed to get cards for set ${setCode}` });
+  }
+});
+
+
+server.listen(3000, () => {
+  console.log(`http://localhost:3000`);
 });
