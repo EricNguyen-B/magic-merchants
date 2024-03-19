@@ -30,7 +30,6 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
             socket?.off(`${room.id}/recieved_bid`);
         };
     }, [socket]);
-    const testImg = "https://imageio.forbes.com/specials-images/imageserve/5ee17b69298ad300068f40d3/-Invoke-Prejudice--is-one-of-seven-cards-to-be-removed-from-the-game-/960x0.png?format=png&width=960";
 
     const handleNavigateToAuctionRoom = () => {
         navigate(`/auction-room`, {state: room});
@@ -72,7 +71,7 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
                         height: 'auto',
                         objectFit: 'contain', // This makes sure the whole image is shown
                     }}
-                    image={testImg}
+                    image={room.image_url}
                     alt="Thumbnail"
                     onClick={handleNavigateToAuctionRoom}
                 />

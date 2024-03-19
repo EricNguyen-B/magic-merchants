@@ -15,5 +15,6 @@ export const auctionSchema = z.object({
     cardName: z.string(),
     cardCondition: z.string(),
     minBidPrice: z.number(),
-    minBidIncrement: z.number()
+    minBidIncrement: z.number(),
+    imageUrl: z.string()
 });

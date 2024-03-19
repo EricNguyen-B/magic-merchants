@@ -12,6 +12,7 @@ import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
+import axios from "axios";
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -155,21 +156,23 @@ app.get("/api/check-active-rooms", async (req, res) => {
 app.post("/api/add-auction", async (req, res) => {
     const sqlCreateAuctionQuery = 
       `INSERT INTO auction_room 
-      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
+      console.log(req.body);
       /**Validate Request Schema**/
-      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement} = schemas.auctionSchema.parse(req.body);
+      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl} = schemas.auctionSchema.parse(req.body);
       /**generate Auction ID**/
       const auctionID = uuid();
       /**Run Auction Query and Then Schedule Event**/
-      await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
+      await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement, imageUrl])
         .then(() => {
           auctionEventScheduler.scheduleEvent(auctionID, dateStart, dateEnd);
-        });
+        }); 
       /**Return a Success Message**/
       res.status(200).json({message: "Success", auction: req.body});
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "Failed to add auction room" });
     }
 });
@@ -196,12 +199,6 @@ app.get("/api/check-top-bids", async (req, res) => {
   }
 });
 
-const port = process.env.PORT;
-const host = process.env.HOST;
-const protocal = process.env.PROTOCAL;
-
-server.listen(port, () => {
-  console.log(`${protocal}://${host}:${port}`);
 interface MTGSet {
   code: string;
   name: string;
@@ -263,7 +260,10 @@ app.get("/api/get-cards/:setCode", async (req, res) => {
   }
 });
 
+const port = process.env.PORT;
+const host = process.env.HOST;
+const protocal = process.env.PROTOCAL;
 
-server.listen(3000, () => {
-  console.log(`http://localhost:3000`);
+server.listen(port, () => {
+  console.log(`${protocal}://${host}:${port}`)
 });

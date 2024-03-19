@@ -15,6 +15,9 @@ import dayjs, { Dayjs } from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import SendIcon from '@mui/icons-material/Send';
+import { useNavigate } from 'react-router-dom';
+import { useCookies, CookiesProvider } from "react-cookie";
+import * as ENV from '../utils/Environment';
 
 interface CardSet {
     code: string;
@@ -30,6 +33,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
+    const [selectedImage, setSelectedImage] = useState<string>("");
     const [cardOptions, setCardOptions] = useState<CardOption[]>([]);
     const [cardCondition, setCardCondition] = useState<string>("");
     const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
@@ -39,10 +43,13 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
     const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
     const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
 
+    const navigate = useNavigate();
+    const [cookies] = useCookies(['user_email']);
+
     useEffect(() => {
         const getCardSets = async () => {
             try {
-                const response = await axios.get(`/api/get-sets`);
+                const response = await axios.get(`${ENV.getServerURL()}/api/get-sets`);
                 if (response.data && Array.isArray(response.data)) {
                     setCardSets(response.data);
                 } else {
@@ -61,7 +68,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
                 return;
             }
             try {
-                const response = await axios.get(`/api/get-cards/${selectedSet}`);
+                const response = await axios.get(`${ENV.getServerURL()}/api/get-cards/${selectedSet}`);
                 if (response.data && Array.isArray(response.data)) {
                     setCardOptions(response.data);
                 } else {
@@ -77,22 +84,40 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
     const handleFormSubmit = async function(){
         console.log("Submit Clicked");
         try{
-        await axios.post("/api/add-auction", {
-            dateStart: startDateValue,
-            dateEnd: endDateValue,
-            cardName: cardNameValue,
-            cardCondition: cardConditionValue,
-            minBidPrice: minBidPriceValue,
-            minBidIncrement: minBidIncrementValue
-        }).then(res => {
-            console.log(res.data);
-            setStartDateValue(dayjs());
-            setEndDateValue(dayjs().add(1, "hour"));
-            setCardNameValue("");
-            setCardConditionValue("");
-            setMinBidPriceValue(0);
-            setMinBidIncrementValue(0);
-        });
+            await axios.post(`${ENV.getServerURL()}/api/add-auction`, {
+                sellerEmail: cookies.user_email,
+                dateStart: startDateValue,
+                dateEnd: endDateValue,
+                cardName: selectedCard,
+                cardCondition: cardCondition,
+                minBidPrice: minBidPriceValue,
+                minBidIncrement: minBidIncrementValue,
+                imageUrl: selectedImage
+            }).then(res => {
+                console.log(res.data);
+                setStartDateValue(dayjs());
+                setEndDateValue(dayjs().add(1, "hour"));
+                setCardNameValue("");
+                setCardConditionValue("");
+                setMinBidPriceValue(0);
+                setMinBidIncrementValue(0);
+                setSelectedImage("");
+
+                const room = {
+                    sellerEmail: cookies.user_email,
+                    dateStart: startDateValue,
+                    dateEnd: endDateValue,
+                    cardName: cardNameValue,
+                    cardCondition: cardConditionValue,
+                    minBidPrice: minBidPriceValue,
+                    minBidIncrement: minBidIncrementValue,
+                    imageUrl: selectedImage
+                }
+            
+                navigate(`/auction-room`, {state: room});
+                
+            });
+            
         }catch(error){
             console.log(error);
         }
@@ -110,6 +135,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
         const selectedCard = cardOptions.find(card => card.name === cardName);
         if (selectedCard && selectedCard.imageUrl) {
             setSelectedImageUrl(selectedCard.imageUrl);
+            setSelectedImage(selectedCard.imageUrl);
         }
     };
     
@@ -117,7 +143,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
         setCardCondition(event.target.value);
         setSelectedCardCondition(event.target.value); // Update card condition in parent state
     };
-    
+
     return (
         <Grid item xs={4}>
             <Box sx={{ bgcolor: '#474747', height: '80vh', borderRadius: 1, p: 3 }}>

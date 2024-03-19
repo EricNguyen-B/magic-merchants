@@ -11,6 +11,7 @@ import * as schemas from "./schemas.js";
 import { Authenicator } from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import { AuctionEventScheduler } from "./schedules.js";
+import axios from "axios";
 dotenv.config({ path: '../.env' });
 sqlite3.verbose();
 let __dirname = url.fileURLToPath(new URL("..", import.meta.url));
@@ -152,15 +153,16 @@ app.get("/api/check-active-rooms", async (req, res) => {
 });
 app.post("/api/add-auction", async (req, res) => {
     const sqlCreateAuctionQuery = `INSERT INTO auction_room 
-      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
+        console.log(req.body);
         /**Validate Request Schema**/
-        const { sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement } = schemas.auctionSchema.parse(req.body);
+        const { sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl } = schemas.auctionSchema.parse(req.body);
         /**generate Auction ID**/
         const auctionID = uuid();
         /**Run Auction Query and Then Schedule Event**/
-        await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
+        await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement, imageUrl])
             .then(() => {
             auctionEventScheduler.scheduleEvent(auctionID, dateStart, dateEnd);
         });
@@ -168,6 +170,7 @@ app.post("/api/add-auction", async (req, res) => {
         res.status(200).json({ message: "Success", auction: req.body });
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ error: "Failed to add auction room" });
     }
 });
@@ -193,11 +196,6 @@ app.get("/api/check-top-bids", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-const port = process.env.PORT;
-const host = process.env.HOST;
-const protocal = process.env.PROTOCAL;
-server.listen(port, () => {
-    console.log(`${protocal}://${host}:${port}`);
 app.get("/api/get-sets", async (req, res) => {
     try {
         const response = await axios.get("https://api.magicthegathering.io/v1/sets");
@@ -250,6 +248,9 @@ app.get("/api/get-cards/:setCode", async (req, res) => {
         res.status(500).json({ error: `Failed to get cards for set ${setCode}` });
     }
 });
-server.listen(3000, () => {
-    console.log(`http://localhost:3000`);
+const port = process.env.PORT;
+const host = process.env.HOST;
+const protocal = process.env.PROTOCAL;
+server.listen(port, () => {
+    console.log(`${protocal}://${host}:${port}`);
 });
