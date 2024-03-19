@@ -1,7 +1,6 @@
 import React from 'react';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import { CardActionArea } from '@mui/material';
 
 const MTGCard = ({ imageUrl }) => {
     const cardWidth = 250; // width in pixels
@@ -12,20 +11,20 @@ const MTGCard = ({ imageUrl }) => {
       <Card sx={{ 
         width: cardWidth, 
         height: cardHeight, 
-        margin: 'auto', // Centers the card horizontally in the parent container
-        marginTop: '20px', // Add a top margin to the card
-        display: 'flex', // Makes the card a flex container
-        alignItems: 'center', // Centers the card media vertically in the card
-        justifyContent: 'center', // Centers the card media horizontally in the card
+        margin: 'auto', 
+        marginTop: '20px',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
       }}> 
         <CardMedia
             component="img"
             sx={{ 
-                width: 'auto', // Maintains the image aspect ratio
-                height: '100%', // Fills the card height
-                maxHeight: cardHeight, // Ensures the image does not exceed the card height
+                width: 'auto', 
+                height: '100%', 
+                maxHeight: cardHeight, 
             }}
-            image={imageUrl}
+            image={imageUrl != '' ? imageUrl : 'https://i.imgur.com/LdOBU1I.jpg'}
             alt="MTG Card"
         />
       </Card>

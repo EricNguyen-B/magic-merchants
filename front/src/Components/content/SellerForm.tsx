@@ -16,6 +16,7 @@ export default function SellerForm() {
   const [cardConditionValue, setCardConditionValue] = useState<string>("");
   const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
   const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
+  
   /**Handle Form Submission**/
   const handleSubmit = async function(){
     console.log("Submit Clicked");
@@ -47,7 +48,6 @@ export default function SellerForm() {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of MTG cards**/}
           <TextField
             required
             id="mtg-card-name"
@@ -58,7 +58,6 @@ export default function SellerForm() {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of conditions**/}
           <TextField
             required
             id="mtg-card-condition"

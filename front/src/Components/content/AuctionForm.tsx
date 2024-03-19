@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import axios from "axios";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -16,9 +16,22 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import SendIcon from '@mui/icons-material/Send';
 
-const AuctionForm = () => {
-    const [age, setAge] = React.useState('');
-
+interface CardSet {
+    code: string;
+    name: string;
+}
+  
+interface CardOption {
+    id: string;
+    name: string;
+}
+  
+const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+    const [cardSets, setCardSets] = useState<CardSet[]>([]);
+    const [selectedSet, setSelectedSet] = useState<string>("");
+    const [selectedCard, setSelectedCard] = useState<string>("");
+    const [cardOptions, setCardOptions] = useState<CardOption[]>([]);
+    const [cardCondition, setCardCondition] = useState<string>("");
     const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
     const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
     const [cardNameValue, setCardNameValue] = useState<string>("");
@@ -26,8 +39,42 @@ const AuctionForm = () => {
     const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
     const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
 
-    /**Handle Form Submission**/
-    const handleSubmit = async function(){
+    useEffect(() => {
+        const getCardSets = async () => {
+            try {
+                const response = await axios.get(`/api/get-sets`);
+                if (response.data && Array.isArray(response.data)) {
+                    setCardSets(response.data);
+                } else {
+                    console.error('Unexpected response format:', response.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch card sets:', error);
+            }
+        };
+        getCardSets();
+    }, []);
+    
+    useEffect(() => {
+        const getCardsBySet = async () => {
+            if (!selectedSet) {
+                return;
+            }
+            try {
+                const response = await axios.get(`/api/get-cards/${selectedSet}`);
+                if (response.data && Array.isArray(response.data)) {
+                    setCardOptions(response.data);
+                } else {
+                    console.error('Unexpected response format:', response.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch cards for set:", error);
+            }
+        };
+        getCardsBySet();
+    }, [selectedSet]);
+    
+    const handleFormSubmit = async function(){
         console.log("Submit Clicked");
         try{
         await axios.post("/api/add-auction", {
@@ -47,50 +94,92 @@ const AuctionForm = () => {
             setMinBidIncrementValue(0);
         });
         }catch(error){
-        console.log(error);
+            console.log(error);
         }
     }
 
-    const handleChange = (event: SelectChangeEvent) => {
-        setAge(event.target.value as string);
+    const handleSetChange = (event: SelectChangeEvent) => {
+        setSelectedSet(event.target.value as string);
     };
 
+    const handleCardChange = (event: SelectChangeEvent) => {
+        const cardName = event.target.value;
+        setSelectedCard(cardName);
+    
+        // Find the card in cardOptions and update imageUrl
+        const selectedCard = cardOptions.find(card => card.name === cardName);
+        if (selectedCard && selectedCard.imageUrl) {
+            setSelectedImageUrl(selectedCard.imageUrl);
+        }
+    };
+    
+    const handleConditionChange = (event: SelectChangeEvent) => {
+        setCardCondition(event.target.value);
+        setSelectedCardCondition(event.target.value); // Update card condition in parent state
+    };
+    
     return (
         <Grid item xs={4}>
-            <Box sx={{ bgcolor: '#474747', height: '63vh', borderRadius: 1, p: 3 }}>
+            <Box sx={{ bgcolor: '#474747', height: '80vh', borderRadius: 1, p: 3 }}>
                 <Grid container direction="column" spacing={2}> 
                     <Grid item>
                         <FormControl fullWidth sx={{ mt: 2 }}> 
                         <InputLabel>Set Name</InputLabel>
                         <Select
-                            value={age}
+                            value={selectedSet}
                             label="Set Name"
-                            onChange={handleChange}
+                            onChange={handleSetChange}
                         >
-                            <MenuItem value={10}>Ten</MenuItem>
+                            {Array.isArray(cardSets) && cardSets.map(set => (
+                                <MenuItem key={set.code} value={set.code}>
+                                    {set.name}
+                                </MenuItem>
+                            ))}
                         </Select>
                         </FormControl>
                     </Grid>
                     <Grid item>
                         <FormControl fullWidth>
-                        <InputLabel>Card Condition</InputLabel>
-                        <Select
-                            value={age} 
-                            label="Another Label"
-                            onChange={handleChange} 
-                        >
-                            <MenuItem value={20}>Twenty</MenuItem>
-                        </Select>
+                            <InputLabel>Card Name</InputLabel>
+                            <Select
+                                value={selectedCard} 
+                                label="Card Name"
+                                onChange={handleCardChange} 
+                            >
+                                {cardOptions.map(card => (
+                                    <MenuItem
+                                        key={card.id}
+                                        value={card.name}
+                                    >
+                                        {card.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl fullWidth>
+                            <InputLabel>Card Condition</InputLabel>
+                            <Select
+                                value={cardCondition} 
+                                label="Card Condition"
+                                onChange={handleConditionChange} 
+                            >
+                                <MenuItem value={"Mint"}>Mint</MenuItem>
+                                <MenuItem value={"Near Mint"}>Near Mint</MenuItem>
+                                <MenuItem value={"Played"}>Played</MenuItem>
+                                <MenuItem value={"Heavily Played"}>Heavily Played</MenuItem>
+                            </Select>
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DateTimePicker
-                            label="Start Date"
-                            minDateTime={dayjs()}
-                            value={startDateValue}
-                            onChange={(newValue) => setStartDateValue(newValue)}
-                            sx={{ width: '100%' }}
+                                label="Start Date"
+                                minDateTime={dayjs()}
+                                value={startDateValue}
+                                onChange={(newValue) => setStartDateValue(newValue)}
+                                sx={{ width: '100%' }}
                             />
                         </LocalizationProvider>
                         </Grid>
@@ -116,8 +205,12 @@ const AuctionForm = () => {
                                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
                             }}
                             value={minBidPriceValue}
-                            onChange={(newValue) => setMinBidPriceValue(parseInt(newValue.target.value))}
-                            />
+                            onChange={(e) => {
+                                const newValue = parseInt(e.target.value, 10);
+                                setMinBidPriceValue(newValue);
+                                setPrice(newValue); // Update the price in the parent component as well
+                            }}
+                        />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <TextField
@@ -127,7 +220,7 @@ const AuctionForm = () => {
                             type="number"
                             fullWidth
                             InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
                             }}
                             value={minBidIncrementValue}
                             onChange={(newValue) => setMinBidIncrementValue(parseInt(newValue.target.value))}
@@ -135,7 +228,7 @@ const AuctionForm = () => {
                     </Grid>
                     <Grid item xs={12}>
                         <Box display="flex" justifyContent="flex-end"> {/* This Box will push the button to the right */}
-                            <Button onClick={handleSubmit} variant="contained" endIcon={<SendIcon />}>
+                            <Button onClick={handleFormSubmit} variant="contained" endIcon={<SendIcon />}>
                                 Create Room
                             </Button>
                         </Box>
