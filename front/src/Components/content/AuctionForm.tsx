@@ -143,7 +143,6 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
         setCardCondition(event.target.value);
         setSelectedCardCondition(event.target.value); // Update card condition in parent state
     };
-
     return (
         <Grid item xs={4}>
             <Box sx={{ bgcolor: '#474747', height: '80vh', borderRadius: 1, p: 3 }}>

@@ -8,10 +8,14 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
+<<<<<<< HEAD
 import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
+=======
+import { scheduleAuctionEvent } from "./schedules.js";
+>>>>>>> f959f83664567032c416765eabfd8159267354de
 import axios from "axios";
 
 dotenv.config({path: '../.env'});
