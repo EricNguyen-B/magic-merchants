@@ -52,7 +52,7 @@ const Sidebar = () => {
                                         <ListItemIcon>
                                             <MeetingRoomIcon />
                                         </ListItemIcon>
-                                        <ListItemText primary={room.card_name} />
+                                        <ListItemText primary={room.id} />
                                     </ListItemButton>
                                 </ListItem>
                             ))

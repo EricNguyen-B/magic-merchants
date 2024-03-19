@@ -9,7 +9,8 @@ export type Room = {
     card_condition: string,
     min_bid_price: string,
     min_bid_increment: string,
-    room_status: string
+    room_status: string,
+    image_url: string
 }
 export type Bid = {
     id: string,

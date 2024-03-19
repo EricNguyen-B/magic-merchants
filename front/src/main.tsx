@@ -5,6 +5,7 @@ import { SocketProvider } from "./Context/SocketContext";
 import { ThemeProvider, createTheme, PaletteMode } from '@mui/material';
 import HomePage from "./Components/pages/HomePage";
 import AuctionRoom from './Components/pages/AuctionRoomPage';
+import BuyersPage from "./components/pages/BuyersPage";
 import SellersPage from "./Components/pages/SellersPage";
 import LoginPage from "./Components/pages/LoginPage";
 import RegisterPage from "./Components/pages/RegisterPage";

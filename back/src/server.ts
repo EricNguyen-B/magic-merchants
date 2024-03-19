@@ -8,10 +8,15 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
+<<<<<<< HEAD
 import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
+=======
+import { scheduleAuctionEvent } from "./schedules.js";
+>>>>>>> f959f83664567032c416765eabfd8159267354de
+import axios from "axios";
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -155,21 +160,23 @@ app.get("/api/check-active-rooms", async (req, res) => {
 app.post("/api/add-auction", async (req, res) => {
     const sqlCreateAuctionQuery = 
       `INSERT INTO auction_room 
-      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+      (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
+      console.log(req.body);
       /**Validate Request Schema**/
-      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement} = schemas.auctionSchema.parse(req.body);
+      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl} = schemas.auctionSchema.parse(req.body);
       /**generate Auction ID**/
       const auctionID = uuid();
       /**Run Auction Query and Then Schedule Event**/
-      await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement])
+      await db.run(sqlCreateAuctionQuery, [auctionID, sellerEmail, cardName, cardCondition, dateStart, dateEnd, minBidPrice, minBidIncrement, imageUrl])
         .then(() => {
           auctionEventScheduler.scheduleEvent(auctionID, dateStart, dateEnd);
-        });
+        }); 
       /**Return a Success Message**/
       res.status(200).json({message: "Success", auction: req.body});
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "Failed to add auction room" });
     }
 });
@@ -196,10 +203,71 @@ app.get("/api/check-top-bids", async (req, res) => {
   }
 });
 
+interface MTGSet {
+  code: string;
+  name: string;
+}
+
+interface MTGCard {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
+
+app.get("/api/get-sets", async (req, res) => {
+  try {
+    const response = await axios.get("https://api.magicthegathering.io/v1/sets");
+    if (response.data && response.data.sets) {
+      const sets = response.data.sets.map((set: MTGSet) => ({
+        code: set.code,
+        name: set.name
+      }));
+      res.json(sets);
+    } else {
+      res.status(404).json({ error: "No sets found" });
+    }
+  } catch (error) {
+    console.error("Failed to get card sets", error);
+    res.status(500).json({ error: "Failed to get card sets" });
+  }
+});
+
+app.get("/api/get-card-image/:cardName", async (req, res) => {
+  try {
+    const { cardName } = req.params;
+    const result = await axios.get(`https://api.magicthegathering.io/v1/cards?name=${cardName}`);
+    const imageUrl = result.data.cards[0]?.imageUrl;
+    res.json({ imageUrl }); 
+  } catch (error) {
+    console.error(`Failed to get image for card ${req.params.cardName}`, error);
+    res.status(500).json({ error: "Failed to get card image" });
+  }
+});
+
+app.get("/api/get-cards/:setCode", async (req, res) => {
+  const { setCode } = req.params;
+  try {
+    const response = await axios.get(`https://api.magicthegathering.io/v1/cards?set=${setCode}`);
+    if (response.data && response.data.cards) {
+      const cards = response.data.cards.map((card: MTGCard) => ({
+        id: card.id, // Use a unique identifier here; id or multiverseid
+        name: card.name,
+        imageUrl: card.imageUrl // Ensure you're handling cases where some cards may not have an image
+      }));
+      res.json(cards);
+    } else {
+      res.status(404).json({ error: "No cards found for this set" });
+    }
+  } catch (error) {
+    console.error(`Failed to get cards for set ${setCode}`, error);
+    res.status(500).json({ error: `Failed to get cards for set ${setCode}` });
+  }
+});
+
 const port = process.env.PORT;
 const host = process.env.HOST;
 const protocal = process.env.PROTOCAL;
 
 server.listen(port, () => {
-  console.log(`${protocal}://${host}:${port}`);
+  console.log(`${protocal}://${host}:${port}`)
 });

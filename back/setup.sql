@@ -7,6 +7,7 @@ CREATE TABLE auction_room (
     date_end DATE,
     min_bid_price INTEGER,
     min_bid_increments INTEGER,
+    image_url TEXT,
     room_status TEXT NOT NULL DEFAULT 'inactive',
     FOREIGN KEY(seller_email) REFERENCES users(email),
     CONSTRAINT check_room_status CHECK (room_status IN ('inactive', 'active', 'complete'))

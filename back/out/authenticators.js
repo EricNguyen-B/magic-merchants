@@ -29,8 +29,6 @@ export class Authenicator {
     authorizeSocketConnection = (socket, next) => {
         try {
             const cookies = cookie.parse(socket.handshake.headers.cookie ? socket.handshake.headers.cookie : "");
-            console.log(cookies);
-            console.log(this.tokenStorage);
             (this.tokenStorage[cookies["auth_token"]] === cookies["user_email"]) ?
                 next() : next(new Error("Token Does Not Match"));
         }
