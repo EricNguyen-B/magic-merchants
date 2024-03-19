@@ -11,13 +11,15 @@ import ListItemText from '@mui/material/ListItemText';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import axios from '../../../node_modules/axios/index';
 import { Room } from '../../types';
+import * as ENV from '../utils/Environment';
+
 const drawerWidth = 240;
 
 const Sidebar = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
 
     const checkActiveRooms = async () => {
-        const response = await axios.get(`/api/check-active-rooms`);
+        const response = await axios.get(`${ENV.getServerURL()}/api/check-active-rooms`);
         setRooms(response.data);
         console.log(response.data);
     }

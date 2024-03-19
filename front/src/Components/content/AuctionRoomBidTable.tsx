@@ -9,13 +9,15 @@ import Paper from '@mui/material/Paper';
 import axios from 'axios';
 import {SocketContext} from '../../Context/SocketContext'
 import { Room, Bid } from '../../types';
+import * as ENV from '../utils/Environment';
+
 
 const BidHistoryTable = (room: Room) => {
   const socket = useContext(SocketContext).socket;
   const [historicalBids, setHistoricalBids] = useState<Bid[]>([]);
 
   const checkBidHistory = async () => {
-    const response = await axios.get(`/api/check-bid-history/${room.id}`);
+    const response = await axios.get(`${ENV.getServerURL()}/api/check-bid-history/${room.id}`);
     console.log(response.data)
     setHistoricalBids(response.data);
   }

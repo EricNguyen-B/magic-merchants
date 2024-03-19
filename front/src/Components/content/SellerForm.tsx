@@ -8,8 +8,11 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import InputAdornment from '@mui/material/InputAdornment';
+import * as ENV from '../utils/Environment';
+import { useCookies } from 'react-cookie';
 
 export default function AuctionForm() {
+  const [cookies] = useCookies(['user_email']);
   const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
   const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
   const [cardNameValue, setCardNameValue] = useState<string>("");
@@ -20,7 +23,8 @@ export default function AuctionForm() {
   const handleSubmit = async function(){
     console.log("Submit Clicked");
     try{
-      await axios.post("/api/add-auction", {
+      await axios.post(`${ENV.getServerURL()}/api/add-auction`, {
+        sellerEmail: cookies.user_email,
         dateStart: startDateValue,
         dateEnd: endDateValue,
         cardName: cardNameValue,
