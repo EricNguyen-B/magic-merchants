@@ -12,7 +12,7 @@ import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
-import axios from "axios";
+import Stripe from 'stripe';
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -50,6 +50,7 @@ async function handleSendBidEvent(data:any, socket: Socket) {
     console.log("Failed to send bid");
   }
 }
+
 async function handleJoinRoomEvent(data: any, socket: Socket) {
   try {
     const {auction_id} = data;
@@ -107,6 +108,28 @@ io.use((socket, next) => {
     }
   })
 });
+
+async function getHighestBidForAuction(auctionId: any) {
+  try {
+    const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
+
+    // Use the pool to execute the query
+    const res = await db.get(query, [auctionId]);
+
+    // Check if we got a result back
+    if (res.rows.length > 0) {
+      return res.rows[0].highest_bid; // Return the highest bid
+    } else {
+      return null; // No bids found for this auction
+    }
+  } catch (err) {
+    console.error('Error querying the highest bid for auction:', err);
+    throw err; // Rethrow the error to handle it in the calling function
+  }
+}
+
+
+
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => { 
   socket.on("joining_room", (data) => {
@@ -226,6 +249,38 @@ app.get("/api/get-sets", async (req, res) => {
     console.error("Failed to get card sets", error);
     res.status(500).json({ error: "Failed to get card sets" });
   }
+});
+const stripe = new Stripe(process.env.STRIPE_API_KEY || '');
+app.post('/create-payment-intent', async (req, res) => {
+  const { auctionId, email } = req.body; // Expect auctionId to determine the price
+
+  try {
+    // Assuming you have a function to query your database
+    // This function should return the highest bid for the given auctionId
+    const highestBid = await getHighestBidForAuction(auctionId);
+
+    if (!highestBid) {
+      return res.status(400).send({ error: "No bids found for the auction." });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: highestBid, // Use the highest bid as the amount
+        currency: 'usd',
+        receipt_email: email,
+    });
+
+    res.send({
+        clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error('Failed operation:', error);
+    res.status(400).send({ error: "Operation failed" });
+  }
+});
+
+
+server.listen(3000, () => {
+  console.log(`http://localhost:3000`);
 });
 
 app.get("/api/get-card-image/:cardName", async (req, res) => {
