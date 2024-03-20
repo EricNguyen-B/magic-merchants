@@ -77,7 +77,6 @@ const AuctionRoom = () => {
                     <BidHistoryTable {...room} />
                 </div>
                 <div className="chatbox-container">
-                    {/* ChatBox component */}
                     <ChatBox {...room} />
                 </div>
             </div>
