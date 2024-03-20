@@ -1,42 +1,47 @@
 import { useContext, useEffect, useState } from 'react';
 import {SocketContext} from '../../Context/SocketContext'
 import { Card, CardContent } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import BidHistoryTable from "../content/AuctionRoomBidTable";
 import ChatBox from "../content/ChatBox";
 import TimerCountDown from '../common/Timer';
 import { Room } from '../../types';
 import Navbar from "../common/Navbar";
-import {TextField, FormControl, Button, Grid} from '@mui/material';
+import { TextField, FormControl, Button, Grid } from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
-import { useCookies } from 'react-cookie';
-import Typography from '@mui/material/Typography';
 
 const AuctionRoom = () => {
-    const [cookies] = useCookies(['user_email']);
-    const socket = useContext(SocketContext).socket;
-    const location = useLocation();
-    const room: Room = location.state;
-    const [bidPrice, setBidPrice] = useState<string>("");
-    const [viewerCount, setViewerCount] = useState<number>(0);
+  const navigate = useNavigate();
+  const socket = useContext(SocketContext).socket;
+  const location = useLocation();
+  const room: Room = location.state;
+  const [bidPrice, setBidPrice] = useState<string>("");
+  const [viewerCount, setViewerCount] = useState<number>(0);
 
-    const handleSubmitBid = () => {
-        socket?.emit("sending_bid", {price: parseInt(bidPrice), auction_id: room.id, buyer_email: cookies.user_email});
-      }
-    /**Join Room of Auction ID**/
-    useEffect(() => {
-        console.log(room);
-        socket?.emit("joining_room", {auction_id: room.id});
-        socket?.on("joined_room", (data) => {setViewerCount(data['viewer_count']);});
-        socket?.on("exited_room", (data) => {setViewerCount(data['viewer_count']);});
-        /**Clean up socket listeners**/
-        return () => {
-            socket?.emit("exiting_room", {auction_id: room.id});
-            socket?.off("joined_room");
-            socket?.off("exited_room");
-        };
-    }, [socket])
+  const handleSubmitBid = () => {
+    socket?.emit("sending_bid", { price: parseInt(bidPrice), auction_id: room.id });
+  };
+
+  useEffect(() => {
+    console.log(room);
+    socket?.emit("joining_room", { auction_id: room.id });
+    socket?.on("joined_room", (data) => { setViewerCount(data['viewer_count']); });
+    socket?.on("exited_room", (data) => { setViewerCount(data['viewer_count']); });
+
+    return () => {
+      socket?.emit("exiting_room", { auction_id: room.id });
+      socket?.off("joined_room");
+      socket?.off("exited_room");
+    };
+  }, [socket]);
+
+  // Navigate to Payment Page when auction ends
+  useEffect(() => {
+    if (room.room_status === 'complete') {
+      navigate('/payment'); // Adjust the path as necessary
+    }
+  }, [room.room_status]);
 
     return (
 
