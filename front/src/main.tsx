@@ -8,6 +8,7 @@ import AuctionRoom from './Components/pages/AuctionRoomPage';
 import SellersPage from "./Components/pages/SellersPage";
 import LoginPage from "./Components/pages/LoginPage";
 import RegisterPage from "./Components/pages/RegisterPage";
+import Payment from "./Components/pages/PaymentPage"
 import { Link, Navigate, Outlet } from "react-router-dom";
 import { useCookies, CookiesProvider } from "react-cookie";
 
@@ -72,6 +73,10 @@ let router = createBrowserRouter([
             {
                 path: "/auction-room",
                 element: <PrivateRoute privateContent={<AuctionRoom/>} publicContent={<LoginPage/>}/>
+            },
+            {
+                path: "/payment",
+                element: <PrivateRoute privateContent={<Payment/>} publicContent={<LoginPage/>}/>
             },
             {
                 path: "/sellers-page",
