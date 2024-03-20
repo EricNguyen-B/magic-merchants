@@ -4,7 +4,13 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import MTGCard from './MTGCard';
 
-const CardDescription = ({ imageUrl, cardCondition, price }) => {
+interface CardDescriptionProps {
+    imageUrl: string;
+    cardCondition: string;
+    price: number;
+}
+
+const CardDescription: React.FC<CardDescriptionProps>= ({ imageUrl, cardCondition, price }) => {
     return (
         <Grid item xs={3}>
             <Box sx={{ bgcolor: '#474747', height: '60vh', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} >

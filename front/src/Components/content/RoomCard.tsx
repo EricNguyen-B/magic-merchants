@@ -7,7 +7,7 @@ import { green, red } from '@mui/material/colors';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PodcastsIcon from '@mui/icons-material/Podcasts';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
@@ -76,7 +76,7 @@ const RoomCard = ({room, bid}:{room : Room, bid: Bid}) => {
                     onClick={handleNavigateToAuctionRoom}
                 />
                 <CardContent sx={{ flexGrow: 1}}>
-                    <p><PodcastsIcon/>:{viewerCount}</p>
+                    <p><VisibilityIcon/>:{viewerCount}</p>
                     <p><AttachMoneyIcon/>:{currentBidPrice}</p>
                 </CardContent>
               

@@ -7,7 +7,7 @@
  * This is a temporary solution until I can manage to get the ENV variables 
  * working during deployment with Netlify
  * ***/
-const ENV_MODE:string = "DEV";
+const ENV_MODE:string = "PROD";
 const PROD_URL:string = "https://magic-merchants-16edcf281bcc.herokuapp.com";
 const DEV_URL:string = "http://localhost:8000"
 
