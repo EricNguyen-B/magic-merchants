@@ -1,12 +1,15 @@
 CREATE TABLE auction_room (
     id TEXT PRIMARY KEY,
+    seller_email TEXT,
     card_name TEXT,
     card_condition TEXT,
     date_start DATE,
     date_end DATE,
     min_bid_price INTEGER,
     min_bid_increments INTEGER,
+    image_url TEXT,
     room_status TEXT NOT NULL DEFAULT 'inactive',
+    FOREIGN KEY(seller_email) REFERENCES users(email),
     CONSTRAINT check_room_status CHECK (room_status IN ('inactive', 'active', 'complete'))
 );
 
@@ -14,13 +17,18 @@ CREATE TABLE user_bid (
     id TEXT PRIMARY KEY,
     auction_id TEXT,
     price INTEGER,
+    highest_price INTEGER,
     FOREIGN KEY(auction_id) REFERENCES auction_room(id)
+    FOREIGN KEY(buyer_email) REFERENCES user(email)
+
 );
 CREATE TABLE chat_messages (
     message_id TEXT PRIMARY KEY,
     text_message TEXT,
     auction_id TEXT,
     FOREIGN KEY(auction_id) REFERENCES auction_room(id)
+    FOREIGN KEY(viewer_email) REFERENCES user(email)
+
 );
 
 CREATE TABLE users (

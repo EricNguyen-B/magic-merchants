@@ -11,6 +11,7 @@ import * as schemas from "./schemas.js";
 import { Authenicator } from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import { AuctionEventScheduler } from "./schedules.js";
+import Stripe from 'stripe';
 dotenv.config({ path: '../.env' });
 sqlite3.verbose();
 const db = await open({
@@ -44,13 +45,25 @@ auctionEventScheduler.onStartScheduleEvents();
 async function handleSendBidEvent(data, socket) {
     try {
         const { price, auction_id } = data;
-        const newBidId = uuid();
-        await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
-        io.to(auction_id).emit("recieved_bid", { bid_price: price });
-        io.emit(`${auction_id}/recieved_bid`, { bid_price: price });
+        // Retrieve the current highest bid for the auction
+        const currentHighestBidResult = await db.get('SELECT MAX(price) AS highest_price FROM user_bid WHERE auction_id = ?', [auction_id]);
+        const currentHighestBid = currentHighestBidResult ? currentHighestBidResult.highest_price : 0;
+        // Check if the new bid is higher than the current highest bid
+        if (price > currentHighestBid) {
+            const newBidId = uuid();
+            await db.run('INSERT INTO user_bid(id, auction_id, price) VALUES (?, ?, ?)', [newBidId, auction_id, price]);
+            io.to(auction_id).emit("received_bid", { bid_price: price });
+            io.emit(`${auction_id}/received_bid`, { bid_price: price });
+        }
+        else {
+            // Bid is not higher than the current highest bid, notify the bidding user
+            socket.emit("bid_error", { message: "Your bid must be higher than the current highest bid." });
+        }
     }
     catch (error) {
-        console.log("Failed to send bid");
+        console.log("Failed to send bid", error);
+        // Optionally, notify the user of the failure more directly, if your setup allows
+        socket.emit("bid_error", { message: "Failed to process your bid. Please try again." });
     }
 }
 async function handleJoinRoomEvent(data, socket) {
@@ -101,6 +114,24 @@ async function handleSendMessageEvent(data, socket) {
     }
     catch (error) {
         console.log("Failed to send message", error);
+    }
+}
+async function getHighestBidForAuction(auctionId) {
+    try {
+        const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
+        // Use the pool to execute the query
+        const res = await db.get(query, [auctionId]);
+        // Check if we got a result back
+        if (res.rows.length > 0) {
+            return res.rows[0].highest_bid; // Return the highest bid
+        }
+        else {
+            return null; // No bids found for this auction
+        }
+    }
+    catch (err) {
+        console.error('Error querying the highest bid for auction:', err);
+        throw err; // Rethrow the error to handle it in the calling function
     }
 }
 /**Websocket Event Listeners**/
@@ -189,6 +220,30 @@ app.get("/api/check-top-bids", async (req, res) => {
     }
     catch (error) {
         res.status(500).json({ error: "Failed to check bid history" });
+    }
+});
+const stripe = new Stripe(process.env.STRIPE_API_KEY || '');
+app.post('/create-payment-intent', async (req, res) => {
+    const { auctionId, email } = req.body; // Expect auctionId to determine the price
+    try {
+        // Assuming you have a function to query your database
+        // This function should return the highest bid for the given auctionId
+        const highestBid = await getHighestBidForAuction(auctionId);
+        if (!highestBid) {
+            return res.status(400).send({ error: "No bids found for the auction." });
+        }
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: highestBid,
+            currency: 'usd',
+            receipt_email: email,
+        });
+        res.send({
+            clientSecret: paymentIntent.client_secret,
+        });
+    }
+    catch (error) {
+        console.error('Failed operation:', error);
+        res.status(400).send({ error: "Operation failed" });
     }
 });
 server.listen(3000, () => {
