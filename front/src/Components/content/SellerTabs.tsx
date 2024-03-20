@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import AuctionForm from './AuctionForm';
-import CardDescription from './CardDescription';
+import {CardDescription} from './CardDescription';
 
 interface RoomContentProps {
     setSelectedImageUrl: React.Dispatch<React.SetStateAction<string>>;

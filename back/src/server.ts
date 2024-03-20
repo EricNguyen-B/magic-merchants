@@ -28,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const corsOptions = {
-  origin: ["https://65fa336c3ae02346318053e3--magic-merchants.netlify.app", "http://localhost:5173"],
+  origin: ["https://65fae124f7d0891107eb9b0a--magic-merchants.netlify.app", "http://localhost:5173"],
   credentials: true
 }
 app.use(cors(corsOptions));
@@ -44,10 +44,12 @@ async function handleSendBidEvent(data:any, socket: Socket) {
   try{
     const {price, auction_id, buyer_email} = data;
     const newBidId = uuid();
+    console.log(price, auction_id, buyer_email);
     await db.run('INSERT INTO user_bid(id, buyer_email, auction_id, price) VALUES (?, ?, ?, ?)', [newBidId, buyer_email, auction_id, price]);
     io.to(auction_id).emit("recieved_bid", {bid_price: price}); 
     io.emit(`${auction_id}/recieved_bid`, {bid_price: price});
   }catch(error){
+    console.log(error);
     console.log("Failed to send bid");
   }
 }
@@ -109,26 +111,6 @@ io.use((socket, next) => {
     }
   })
 });
-
-async function getHighestBidForAuction(auctionId: any) {
-  try {
-    const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
-
-    // Use the pool to execute the query
-    const res = await db.get(query, [auctionId]);
-
-    // Check if we got a result back
-    if (res.rows.length > 0) {
-      return res.rows[0].highest_bid; // Return the highest bid
-    } else {
-      return null; // No bids found for this auction
-    }
-  } catch (err) {
-    console.error('Error querying the highest bid for auction:', err);
-    throw err; // Rethrow the error to handle it in the calling function
-  }
-}
-
 
 
 /**Websocket Event Listeners**/
@@ -253,27 +235,24 @@ app.get("/api/get-sets", async (req, res) => {
     res.status(500).json({ error: "Failed to get card sets" });
   }
 });
-app.post('/create-payment-intent', async (req, res) => {
-  const { auctionId, email } = req.body; // Expect auctionId to determine the price
-
+app.post('/api/create-payment-intent', async (req, res) => {
+  const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
+  const { auctionId, email } = req.body; 
+  let highestBidder, highestBid = "";
   try {
-    // Assuming you have a function to query your database
-    // This function should return the highest bid for the given auctionId
-    const highestBid = await getHighestBidForAuction(auctionId);
-
-    if (!highestBid) {
-      return res.status(400).send({ error: "No bids found for the auction." });
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-        amount: highestBid, // Use the highest bid as the amount
-        currency: 'usd',
-        receipt_email: email,
-    });
-
-    res.send({
-        clientSecret: paymentIntent.client_secret,
-    });
+      const max = await db.get(query, [auctionId]);
+      highestBidder = (max.rows.length > 0) ? max[0].highest_bid : "";
+      if (!highestBid) {
+        return res.status(400).send({ error: "No bids found for the auction." });
+      }
+      const paymentIntent = await stripe.paymentIntents.create({
+          amount: parseFloat(highestBid), 
+          currency: 'usd',
+          receipt_email: email,
+      });
+      res.send({
+          clientSecret: paymentIntent.client_secret,
+      });
   } catch (error) {
     console.error('Failed operation:', error);
     res.status(400).send({ error: "Operation failed" });

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import {SocketContext} from '../../Context/SocketContext'
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BidHistoryTable from "../content/AuctionRoomBidTable";
 import ChatBox from "../content/ChatBox";
@@ -10,8 +10,10 @@ import Navbar from "../common/Navbar";
 import { TextField, FormControl, Button, Grid } from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
+import { useCookies } from 'react-cookie';
 
 const AuctionRoom = () => {
+    let [cookies, setCookies] = useCookies(['user_email']);
   const navigate = useNavigate();
   const socket = useContext(SocketContext).socket;
   const location = useLocation();
@@ -20,7 +22,8 @@ const AuctionRoom = () => {
   const [viewerCount, setViewerCount] = useState<number>(0);
 
   const handleSubmitBid = () => {
-    socket?.emit("sending_bid", { price: parseInt(bidPrice), auction_id: room.id });
+    console.log(cookies.user_email);
+    socket?.emit("sending_bid", { price: parseInt(bidPrice), auction_id: room.id, buyer_email: cookies.user_email});
   };
 
   useEffect(() => {
@@ -37,11 +40,11 @@ const AuctionRoom = () => {
   }, [socket]);
 
   // Navigate to Payment Page when auction ends
-  useEffect(() => {
-    if (room.room_status === 'complete') {
-      navigate('/payment'); // Adjust the path as necessary
-    }
-  }, [room.room_status]);
+//   useEffect(() => {
+//     if (room.room_status === 'complete') {
+//       navigate('/payment'); // Adjust the path as necessary
+//     }
+//   }, [room.room_status]);
 
     return (
 

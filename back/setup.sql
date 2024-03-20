@@ -17,9 +17,8 @@ CREATE TABLE user_bid (
     buyer_email TEXT,
     auction_id TEXT,
     price INTEGER,
-    highest_price INTEGER,
     FOREIGN KEY(auction_id) REFERENCES auction_room(id)
-    FOREIGN KEY(buyer_email) REFERENCES user(email)
+    FOREIGN KEY(buyer_email) REFERENCES users(email)
 
 );
 CREATE TABLE chat_messages (

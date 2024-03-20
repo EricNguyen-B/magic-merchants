@@ -36,20 +36,19 @@ interface Props {
 }
   
 const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+    const navigate = useNavigate();
+    const [cookies] = useCookies(['user_email']);
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
     const [selectedImage, setSelectedImage] = useState<string>("");
     const [cardOptions, setCardOptions] = useState<CardOption[]>([]);
-    const [cardCondition, setCardCondition] = useState<string>("");
     const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
     const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
     const [cardNameValue, setCardNameValue] = useState<string>("");
     const [cardConditionValue, setCardConditionValue] = useState<string>("");
     const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
     const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
-    const navigate = useNavigate();
-    const [cookies] = useCookies(['user_email']);
 
     useEffect(() => {
         const getCardSets = async () => {
@@ -94,12 +93,11 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                 dateStart: startDateValue,
                 dateEnd: endDateValue,
                 cardName: selectedCard,
-                cardCondition: cardCondition,
+                cardCondition: cardConditionValue,
                 minBidPrice: minBidPriceValue,
                 minBidIncrement: minBidIncrementValue,
                 imageUrl: selectedImage
             }).then(res => {
-                console.log(res.data);
                 setStartDateValue(dayjs());
                 setEndDateValue(dayjs().add(1, "hour"));
                 setCardNameValue("");
@@ -109,7 +107,6 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                 setSelectedImage("");
 
                 const room = {
-                    sellerEmail: cookies.user_email,
                     dateStart: startDateValue,
                     dateEnd: endDateValue,
                     cardName: cardNameValue,
@@ -118,11 +115,8 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                     minBidIncrement: minBidIncrementValue,
                     imageUrl: selectedImage
                 }
-            
                 navigate(`/auction-room`, {state: room});
-                
             });
-            
         }catch(error){
             console.log(error);
         }
@@ -146,7 +140,7 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
     };
     
     const handleConditionChange = (event: SelectChangeEvent) => {
-        setCardCondition(event.target.value);
+        setCardConditionValue(event.target.value);
         setSelectedCardCondition(event.target.value); // Update card condition in parent state
     };
     return (
@@ -192,7 +186,7 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                         <FormControl fullWidth>
                             <InputLabel>Card Condition</InputLabel>
                             <Select
-                                value={cardCondition} 
+                                value={cardConditionValue} 
                                 label="Card Condition"
                                 onChange={handleConditionChange} 
                             >

@@ -10,10 +10,12 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button'; 
 import axios from "axios";
 import * as ENV from '../utils/Environment';
+import { ChangeEvent } from 'react';
+import { Room } from '../../types';
 
 const Navbar = () => {
-  const [activeRooms, setActiveRooms] = useState([]);
-  const [searchValue, setSearchValue] = useState(null);
+  const [activeRooms, setActiveRooms] = useState<Room[]>([]);
+  const [searchValue, setSearchValue] = useState<Room|null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,12 +30,12 @@ const Navbar = () => {
     fetchActiveRooms();
   }, []);
 
-  const handleSearchChange = (_, value) => {
-    setSearchValue(value);
-    if (value) {
-      navigate(`/auction-room`, { state: { id: value.id } });
-    }
-  };
+  // const handleSearchChange = (_:any, value: Room | null) => {
+  //   setSearchValue(value);
+  //   if (value) {
+  //     navigate(`/auction-room`, { state: {value} });
+  //   }
+  // };
   
   const handleSellerNavigation = () => {
     navigate('/sellers-page');
@@ -61,7 +63,7 @@ const Navbar = () => {
               options={activeRooms}
               getOptionLabel={(option) => option.card_name}
               style={{ width: 300 }}
-              onChange={handleSearchChange}
+              // onChange={handleSearchChange}
               renderInput={(params) => (
                 <TextField {...params} label="Search active rooms" variant="outlined" />
               )}

@@ -1,7 +1,7 @@
 import { Dayjs } from "dayjs";
 
 export type Room = {
-    id: string;
+    id?: string;
     seller_email: string,
     date_start: string,
     date_end: string,
@@ -13,7 +13,7 @@ export type Room = {
     image_url: string
 }
 export type Bid = {
-    id: string,
+    id?: string,
     buyer_email: string,
     auction_id: string,
     price: number
