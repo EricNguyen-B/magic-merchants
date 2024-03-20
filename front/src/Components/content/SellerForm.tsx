@@ -8,19 +8,24 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import InputAdornment from '@mui/material/InputAdornment';
+import * as ENV from '../utils/Environment';
+import { useCookies } from 'react-cookie';
 
 export default function AuctionForm() {
+  const [cookies] = useCookies(['user_email']);
   const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
   const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
   const [cardNameValue, setCardNameValue] = useState<string>("");
   const [cardConditionValue, setCardConditionValue] = useState<string>("");
   const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
   const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
+  
   /**Handle Form Submission**/
   const handleSubmit = async function(){
     console.log("Submit Clicked");
     try{
-      await axios.post("/api/add-auction", {
+      await axios.post(`${ENV.getServerURL()}/api/add-auction`, {
+        sellerEmail: cookies.user_email,
         dateStart: startDateValue,
         dateEnd: endDateValue,
         cardName: cardNameValue,
@@ -47,7 +52,6 @@ export default function AuctionForm() {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of MTG cards**/}
           <TextField
             required
             id="mtg-card-name"
@@ -58,7 +62,6 @@ export default function AuctionForm() {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          {/**Make this a dropdown with a list of conditions**/}
           <TextField
             required
             id="mtg-card-condition"

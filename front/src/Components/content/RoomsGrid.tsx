@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import RoomCard from './RoomCard';
 import { Room, Bid } from '../../types';
 import {SocketContext} from '../../Context/SocketContext'
+import * as ENV from '../utils/Environment';
 
 export default function RoomsGrid() {
     const socket = useContext(SocketContext).socket;
@@ -12,11 +13,11 @@ export default function RoomsGrid() {
     const [topBids, setTopBids] = useState<Bid[]>([]);
 
     const checkTopBids = async () => {
-        const response = await axios.get("/api/check-top-bids");
+        const response = await axios.get(`${ENV.getServerURL()}/api/check-top-bids`);
         setTopBids(response.data);
     }
     const checkActiveRooms = async () => {
-        const response = await axios.get(`/api/check-active-rooms`);
+        const response = await axios.get(`${ENV.getServerURL()}/api/check-active-rooms`);
         setRooms(response.data);
     }
     /**Listen for Auction Room Changes**/
@@ -50,7 +51,7 @@ export default function RoomsGrid() {
                             <RoomCard 
                                 room={room} 
                                 bid={topBids.find(bid => bid.auction_id === room.id) || 
-                                    { id: '', auction_id: '', price: 0 }}
+                                    { id: '', buyer_email: '', auction_id: '', price: 0 }}
                             />
                         </Grid>
                     ))

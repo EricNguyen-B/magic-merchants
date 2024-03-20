@@ -1,2 +1,5 @@
 node_modules
 back/database.db
+
+# Local Netlify folder
+.netlify

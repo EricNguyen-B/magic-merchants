@@ -1,3 +1,4 @@
+import cookie from "cookie";
 import crypto from "crypto";
 import * as argon2 from "argon2";
 import * as schemas from "./schemas.js";
@@ -24,6 +25,16 @@ export class Authenicator {
             return res.status(403).json({ message: "Unauthorized" });
         }
         next();
+    };
+    authorizeSocketConnection = (socket, next) => {
+        try {
+            const cookies = cookie.parse(socket.handshake.headers.cookie ? socket.handshake.headers.cookie : "");
+            (this.tokenStorage[cookies["auth_token"]] === cookies["user_email"]) ?
+                next() : next(new Error("Token Does Not Match"));
+        }
+        catch (error) {
+            next(new Error("Unexpected Error"));
+        }
     };
     privateAPI(req, res) {
         return res.json({ message: "Authentication Successful. Valid Cookie" });
@@ -54,7 +65,8 @@ export class Authenicator {
             let token = makeToken();
             this.tokenStorage[token] = email;
             return res.status(200)
-                .cookie("token", token, cookieOptions)
+                .cookie("auth_token", token, cookieOptions)
+                .cookie("user_email", email)
                 .send();
         }
         catch (error) {
@@ -87,7 +99,8 @@ export class Authenicator {
         let token = makeToken();
         this.tokenStorage[token] = email;
         return res.status(201)
-            .cookie("token", token, cookieOptions)
+            .cookie("auth_token", token, cookieOptions)
+            .cookie("user_email", email)
             .json({ message: "SUCCESS: User Account Created" });
     }
     async logout(req, res) {
@@ -95,7 +108,7 @@ export class Authenicator {
         let token = req.cookies.token;
         if (this.tokenStorage[token]) {
             delete this.tokenStorage[token];
-            return res.clearCookie("token", cookieOptions).send();
+            return res.clearCookie("auth_token", cookieOptions).send();
         }
         return res.status(200).send();
     }

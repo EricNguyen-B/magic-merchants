@@ -1,21 +1,16 @@
 import Navbar from "../common/Navbar";
-import AuctionForm from "../content/SellerForm";
 import { Grid } from "@mui/material";
 import '../../styles/HomePage.css';
+import SellerTabs from "../content/SellerTabs";
 
 const SellersPage = () => {
     return (
-        <Grid className="homepage-container">
+        <Grid className="homepage-container" style={{ width: '100%', height: '100vh' }}>
             <Grid item>
                 <Navbar />
             </Grid>
-            <Grid>
-                <h1>Sellers Page</h1>
-            </Grid>
-            <Grid style={{
-                flexGrow: 1
-            }}>
-                <AuctionForm/>
+            <Grid style={{ flexGrow: 1 }} >
+                <SellerTabs />
             </Grid>
         </Grid>
     )

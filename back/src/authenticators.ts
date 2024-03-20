@@ -1,8 +1,10 @@
 import express, { Response, Request, RequestHandler, CookieOptions, query } from "express";
 import cookieParser from "cookie-parser";
+import cookie from "cookie";
 import crypto from "crypto";
 import * as argon2 from "argon2";
 import { Database } from 'sqlite';
+import {Socket} from 'socket.io';
 import * as schemas from "./schemas.js";
 import * as types from "./types.js";
 
@@ -31,6 +33,15 @@ export class Authenicator{
         }
         next();
     };
+    public authorizeSocketConnection = (socket: Socket, next: (err?: Error) => void) => {
+        try {
+            const cookies = cookie.parse(socket.handshake.headers.cookie? socket.handshake.headers.cookie : "");
+            (this.tokenStorage[cookies["auth_token"]] === cookies["user_email"])? 
+                next(): next(new Error("Token Does Not Match"));
+        }catch(error){
+            next(new Error("Unexpected Error"));
+        }
+    }
     public privateAPI(req: Request, res: Response<types.MessageResponse>) {
         return res.json({ message: "Authentication Successful. Valid Cookie" });
     }
@@ -60,7 +71,8 @@ export class Authenicator{
             let token = makeToken();
             this.tokenStorage[token] = email;
             return res.status(200)
-                .cookie("token", token, cookieOptions)
+                .cookie("auth_token", token, cookieOptions)
+                .cookie("user_email", email)
                 .send();
         }catch(error){
             console.error("Error in login:", error);
@@ -92,7 +104,8 @@ export class Authenicator{
         let token = makeToken();
         this.tokenStorage[token] = email;
         return res.status(201)
-                .cookie("token", token, cookieOptions)
+                .cookie("auth_token", token, cookieOptions)
+                .cookie("user_email", email)
                 .json({message: "SUCCESS: User Account Created"});
     }
     public async logout(req: Request, res: Response<types.EmptyResponse>) {
@@ -100,7 +113,7 @@ export class Authenicator{
         let token = req.cookies.token;
         if (this.tokenStorage[token]){
             delete this.tokenStorage[token];
-            return res.clearCookie("token", cookieOptions).send();
+            return res.clearCookie("auth_token", cookieOptions).send();
         }
         return res.status(200).send();
     }
