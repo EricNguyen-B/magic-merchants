@@ -6,6 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import axios from 'axios';
 import {SocketContext} from '../../Context/SocketContext'
 import { Room, Bid } from '../../types';
@@ -35,28 +36,26 @@ const BidHistoryTable = (room: Room) => {
   }, []); 
   
   return (
-    <>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <TableContainer component={Paper} sx={{ maxWidth: 650 }}> {/* Adjust maxWidth as needed */}
+        <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>Bid ID</TableCell>
-              <TableCell>Auction ID</TableCell>
+              <TableCell>Email</TableCell>
               <TableCell>Price</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {historicalBids.map((bid: Bid, index: number) => (
-              <TableRow key={index}>
-                <TableCell>{bid.id}</TableCell>
-                <TableCell>{bid.auction_id}</TableCell>
-                <TableCell>{bid.price}</TableCell>
-              </TableRow>
-            ))}
+                <TableRow key={index}>
+                  <TableCell>{bid.buyer_email}</TableCell>
+                  <TableCell>{bid.price}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </Box>
   );
 }
 

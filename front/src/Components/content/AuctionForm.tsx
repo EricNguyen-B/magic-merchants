@@ -48,7 +48,6 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
     const [cardConditionValue, setCardConditionValue] = useState<string>("");
     const [minBidPriceValue, setMinBidPriceValue] = useState<number>(0);
     const [minBidIncrementValue, setMinBidIncrementValue] = useState<number>(0);
-
     const navigate = useNavigate();
     const [cookies] = useCookies(['user_email']);
 
@@ -142,6 +141,7 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
         if (selectedCard && selectedCard.imageUrl) {
             setSelectedImageUrl(selectedCard.imageUrl);
             setSelectedImage(selectedCard.imageUrl);
+            console.log(selectedCard.imageUrl);
         }
     };
     
