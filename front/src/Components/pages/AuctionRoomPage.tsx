@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import {SocketContext} from '../../Context/SocketContext'
+import { Card, CardContent } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import BidHistoryTable from "../content/AuctionRoomBidTable";
 import ChatBox from "../content/ChatBox";
@@ -10,7 +11,7 @@ import {TextField, FormControl, Button, Grid} from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
 import { useCookies } from 'react-cookie';
-
+import Typography from '@mui/material/Typography';
 
 const AuctionRoom = () => {
     const [cookies] = useCookies(['user_email']);
@@ -38,51 +39,89 @@ const AuctionRoom = () => {
     }, [socket])
 
     return (
-        <Grid className="homepage-container">
-            <Grid item>
+
+
+        <Grid container spacing={2} className="homepage-container" style={{ marginTop: '80px' }}>
+            
+            <Grid container justifyContent="center" spacing={2}>
                 <Navbar />
-                <h1>Auction Room {room.card_name}</h1>
-                <h1>Current Viewer Count: {viewerCount}</h1>
-                {(() => {
-                        //TODO: Refactor Switch Statements into A JSX Function That Takes in 3 Components and Room as Props
-                        switch (room.room_status){
-                            case "active":
-                                return (<div>
-                                            <h1>Countdown Till Auction End</h1>
-                                            <TimerCountDown date={dayjs(room.date_end)}></TimerCountDown>
-                                        </div>)
-                            case "inactive":
-                                return (<div>
-                                            <h1>Countdown Till Auction Starts</h1>
-                                            <TimerCountDown date={dayjs(room.date_start)}></TimerCountDown>
-                                        </div>)
-                            case "complete":
-                                return (<p>AUCTION COMPLETE</p>)
-                        }
-                    })()}
+                <Grid item xs={12} md={8} lg={6}>
+                    <Card raised style={{ backgroundColor: '#424242', padding: '1rem' }}>
+                        <CardContent>
+                            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                <img
+                                    src={room.image_url}
+                                    alt={`Image of ${room.card_name}`}
+                                    className="auction-room-image"
+                                    style={{ marginRight: '20px', width: '200px', height: 'auto' }} // Adjust width as needed
+                                />
+                                <div>
+                                    <Typography variant="h4" component="h1" gutterBottom>
+                                        Auction Room {room.card_name}
+                                    </Typography>
+                                    <Typography variant="h6" component="h2">
+                                        Current Viewer Count: {viewerCount}
+                                    </Typography>
+                                    {(() => {
+                                        switch (room.room_status) {
+                                        case "active":
+                                            return (
+                                            <div>
+                                                <h2>Countdown Till Auction End</h2>
+                                                <TimerCountDown date={dayjs(room.date_end)} />
+                                            </div>
+                                            );
+                                        case "inactive":
+                                            return (
+                                            <div>
+                                                <h2>Countdown Till Auction Starts</h2>
+                                                <TimerCountDown date={dayjs(room.date_start)} />
+                                            </div>
+                                            );
+                                        case "complete":
+                                            return <p>AUCTION COMPLETE</p>;
+                                        }
+                                    })()}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem' }}>
+                                        <FormControl className="bid-input" style={{ flexGrow: 1, marginRight: '1rem' }}>
+                                            <TextField
+                                            label="Enter Bid Price"
+                                            variant="outlined"
+                                            value={bidPrice}
+                                            type="number"
+                                            onChange={(e) => setBidPrice(e.target.value)}
+                                            InputProps={{ style: { fontSize: '1.5rem' } }} // Make the text larger
+                                            InputLabelProps={{ style: { fontSize: '1.5rem' } }} // Adjust the label size if needed
+                                            />
+                                        </FormControl>
+                                        <Button 
+                                            onClick={handleSubmitBid} 
+                                            variant="contained"
+                                            size="large" 
+                                            style={{
+                                            fontSize: '1.5rem', 
+                                            padding: '0.5rem 2rem', 
+                                            minWidth: '150px' 
+                                            }}
+                                        >
+                                            BID
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Grid item style={{ marginTop: '20px', marginLeft: '20px' }}>
+                        <BidHistoryTable {...room} />
+                    </Grid>
+                </Grid>
+                <Grid item xs={12} md={4} lg={6}>
+                    <div style={{ height: '300px' }}> {/* Set a fixed height and allow scrolling */}
+                        <ChatBox {...room} />
+                    </div>
+                </Grid>
+
             </Grid>
-            <FormControl className="bid-input">
-                <TextField
-                    label="Enter Bid Price"
-                    variant="outlined"
-                    value={bidPrice}
-                    type="number"
-                    onChange={(newValue) => setBidPrice(newValue.target.value)}
-                />
-            </FormControl>
-            <Button 
-                onClick={handleSubmitBid} 
-                variant="contained">Submit
-            </Button>
-            <div className="auction-room-container">
-                <div className="content-area">
-                    <BidHistoryTable {...room} />
-                </div>
-                <div className="chatbox-container">
-                    {/* ChatBox component */}
-                    <ChatBox {...room} />
-                </div>
-            </div>
         </Grid>
     );
 }

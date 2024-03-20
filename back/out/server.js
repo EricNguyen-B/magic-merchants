@@ -8,13 +8,9 @@ import { Server } from "socket.io";
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
-<<<<<<< HEAD
 import { Authenicator } from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import { AuctionEventScheduler } from "./schedules.js";
-=======
-import { scheduleAuctionEvent } from "./schedules.js";
->>>>>>> f959f83664567032c416765eabfd8159267354de
 import axios from "axios";
 dotenv.config({ path: '../.env' });
 sqlite3.verbose();
@@ -182,11 +178,7 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
     const sqlGetBidHistory = 'SELECT * FROM user_bid WHERE auction_id = ?';
     try {
         const { auctionId } = req.params;
-<<<<<<< HEAD
         const result = await db.all(sqlGetBidHistory, [auctionId]);
-=======
-        result = await db.all("SELECT * FROM user_bid WHERE auction_id = ?", [auctionId]);
->>>>>>> f959f83664567032c416765eabfd8159267354de
         res.json(result);
     }
     catch (error) {
@@ -194,7 +186,6 @@ app.get("/api/check-bid-history/:auctionId", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-<<<<<<< HEAD
 app.get("/api/check-top-bids", async (req, res) => {
     const sqlGetTopBids = 'SELECT id, buyer_email, auction_id, MAX(price) AS price FROM user_bid GROUP BY auction_id';
     try {
@@ -205,8 +196,6 @@ app.get("/api/check-top-bids", async (req, res) => {
         res.status(500).json({ error: "Failed to check bid history" });
     }
 });
-=======
->>>>>>> f959f83664567032c416765eabfd8159267354de
 app.get("/api/get-sets", async (req, res) => {
     try {
         const response = await axios.get("https://api.magicthegathering.io/v1/sets");
@@ -259,14 +248,9 @@ app.get("/api/get-cards/:setCode", async (req, res) => {
         res.status(500).json({ error: `Failed to get cards for set ${setCode}` });
     }
 });
-<<<<<<< HEAD
 const port = process.env.PORT;
 const host = process.env.HOST;
 const protocal = process.env.PROTOCAL;
 server.listen(port, () => {
     console.log(`${protocal}://${host}:${port}`);
-=======
-server.listen(3000, () => {
-    console.log(`http://localhost:3000`);
->>>>>>> f959f83664567032c416765eabfd8159267354de
 });
