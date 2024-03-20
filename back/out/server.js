@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const corsOptions = {
-    origin: ["https://65f61e1914875808d3079c84--magic-merchants.netlify.app", "http://localhost:5173"],
+    origin: ["https://65fa336c3ae02346318053e3--magic-merchants.netlify.app", "http://localhost:5173"],
     credentials: true
 };
 app.use(cors(corsOptions));
@@ -156,7 +156,6 @@ app.post("/api/add-auction", async (req, res) => {
       (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
-        console.log(req.body);
         /**Validate Request Schema**/
         const { sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl } = schemas.auctionSchema.parse(req.body);
         /**generate Auction ID**/

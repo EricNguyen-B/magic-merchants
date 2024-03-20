@@ -12,7 +12,6 @@ import {Authenicator} from "./authenticators.js";
 import cookieParser from "cookie-parser";
 import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
-import axios from "axios";
 
 dotenv.config({path: '../.env'});
 sqlite3.verbose(); 
@@ -208,12 +207,15 @@ interface MTGCard {
   name: string;
   imageUrl: string;
 }
-
 app.get("/api/get-sets", async (req, res) => {
   try {
-    const response = await axios.get("https://api.magicthegathering.io/v1/sets");
-    if (response.data && response.data.sets) {
-      const sets = response.data.sets.map((set: MTGSet) => ({
+    const response = await fetch("https://api.magicthegathering.io/v1/sets");
+    if (!response.ok) {
+      throw new Error('Failed to fetch sets');
+    }
+    const data = await response.json();
+    if (data && data.sets) {
+      const sets = data.sets.map((set: MTGSet) => ({
         code: set.code,
         name: set.name
       }));
@@ -230,9 +232,13 @@ app.get("/api/get-sets", async (req, res) => {
 app.get("/api/get-card-image/:cardName", async (req, res) => {
   try {
     const { cardName } = req.params;
-    const result = await axios.get(`https://api.magicthegathering.io/v1/cards?name=${cardName}`);
-    const imageUrl = result.data.cards[0]?.imageUrl;
-    res.json({ imageUrl }); 
+    const response = await fetch(`https://api.magicthegathering.io/v1/cards?name=${cardName}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch card image');
+    }
+    const data = await response.json();
+    const imageUrl = data.cards[0]?.imageUrl;
+    res.json({ imageUrl });
   } catch (error) {
     console.error(`Failed to get image for card ${req.params.cardName}`, error);
     res.status(500).json({ error: "Failed to get card image" });
@@ -242,12 +248,16 @@ app.get("/api/get-card-image/:cardName", async (req, res) => {
 app.get("/api/get-cards/:setCode", async (req, res) => {
   const { setCode } = req.params;
   try {
-    const response = await axios.get(`https://api.magicthegathering.io/v1/cards?set=${setCode}`);
-    if (response.data && response.data.cards) {
-      const cards = response.data.cards.map((card: MTGCard) => ({
-        id: card.id, // Use a unique identifier here; id or multiverseid
+    const response = await fetch(`https://api.magicthegathering.io/v1/cards?set=${setCode}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch cards for set');
+    }
+    const data = await response.json();
+    if (data && data.cards) {
+      const cards = data.cards.map((card: MTGCard) => ({
+        id: card.id,
         name: card.name,
-        imageUrl: card.imageUrl // Ensure you're handling cases where some cards may not have an image
+        imageUrl: card.imageUrl
       }));
       res.json(cards);
     } else {
