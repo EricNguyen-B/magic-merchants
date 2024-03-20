@@ -1,23 +1,30 @@
-import * as React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
-    Box,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TableSortLabel,
-    TablePagination
-  } from '@mui/material';
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  TablePagination
+} from '@mui/material';
 
-const createData = (name, condition, bidPrice, purchaseDate, seller) => {
+interface Row {
+  name: string;
+  condition: string;
+  bidPrice: string;
+  purchaseDate: string;
+  seller: string;
+}
+
+const createData = (name: string, condition: string, bidPrice: string, purchaseDate: string, seller: string): Row => {
   return { name, condition, bidPrice, purchaseDate, seller };
 }
 
-const rows = [
+const rows: Row[] = [
   createData('Black Lotus', 'Near Mint', '$20000', '01/04/2021', 'JohnDoe'),
   createData('Black Lotus', 'Near Mint', '$20000', '01/04/2021', 'JohnDoe'),
   createData('Mox Pearl', 'Lightly Played', '$15000', '12/03/2021', 'JaneSmith'),
@@ -28,40 +35,36 @@ const rows = [
   createData('Mox Pearl', 'Lightly Played', '$15000', '12/03/2021', 'JaneSmith'),
 ];
 
-const Inventory = () => {
-    const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-    const [orderBy, setOrderBy] = useState('bidPrice');
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-  
-    // Handle request sort function
-    const handleRequestSort = (property) => {
-      const isAscending = orderBy === property && order === 'asc';
-      setOrder(isAscending ? 'desc' : 'asc');
-      setOrderBy(property);
-    };
-  
-    // Sort the rows
-    const sortedRows = rows.sort((a, b) => {
-      if (a[orderBy] < b[orderBy]) {
-        return order === 'asc' ? -1 : 1;
-      }
-      if (a[orderBy] > b[orderBy]) {
-        return order === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  
-    // Change page
-    const handleChangePage = (event, newPage) => {
-      setPage(newPage);
-    };
-  
-    // Change rows per page
-    const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    };
+const Inventory: React.FC = () => {
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = useState<string>('bidPrice');
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+
+  // Handle request sort function
+  const handleRequestSort = (property: string) => {
+    const isAscending = orderBy === property && order === 'asc';
+    setOrder(isAscending ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  // Sort the rows
+  const sortedRows = rows.sort((a, b) => {
+    const orderByKey = orderBy as keyof Row;
+    const compareValue = (a[orderByKey] as string).localeCompare(b[orderByKey] as string);
+    return order === 'asc' ? compareValue : -compareValue;
+});
+
+  // Change page
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Change rows per page
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
   
     return (
       <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 10 }}>

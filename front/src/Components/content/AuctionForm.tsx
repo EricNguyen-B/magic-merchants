@@ -27,9 +27,15 @@ interface CardSet {
 interface CardOption {
     id: string;
     name: string;
+    imageUrl?: string;
+}
+interface Props {
+    setSelectedImageUrl: (imageUrl: string) => void;
+    setSelectedCardCondition: (condition: string) => void;
+    setPrice: (price: number) => void;
 }
   
-const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");

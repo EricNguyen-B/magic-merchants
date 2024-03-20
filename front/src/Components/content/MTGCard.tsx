@@ -2,7 +2,10 @@ import React from 'react';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 
-const MTGCard = ({ imageUrl }) => {
+interface MTGCardProps {
+  imageUrl: string;
+}
+const MTGCard: React.FC<MTGCardProps> = ({ imageUrl }) => {
     const cardWidth = 250; // width in pixels
     const cardAspectRatio = 88 / 63; // height to width ratio of a standard MTG card
     const cardHeight = cardWidth * cardAspectRatio; // height in pixels

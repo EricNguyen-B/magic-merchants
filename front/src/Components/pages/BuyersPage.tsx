@@ -6,11 +6,11 @@ import '../../styles/HomePage.css';
 
 const BuyersPage = () => {
     return (
-        <Grid classname="homepage-container" style={{ width: '100%', height: '100vh' }}>
+        <Grid container className="homepage-container" style={{ width: '100%', height: '100vh' }}>
             <Grid item>
                 <Navbar />
             </Grid>
-            <Grid style={{ flexGrow: 1}}>
+            <Grid item style={{ flexGrow: 1}}>
                 <Inventory/>
             </Grid>        
         </Grid>
