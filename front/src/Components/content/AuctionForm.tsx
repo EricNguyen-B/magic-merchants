@@ -1,23 +1,14 @@
-import * as React from "react";
 import { useEffect, useState } from 'react';
+import * as ENV from '../utils/Environment';
 import axios from "axios";
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { TextField, Box, Button, Grid, InputLabel, InputAdornment, MenuItem, FormControl, Select, SelectChangeEvent } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import SendIcon from '@mui/icons-material/Send';
 import { useNavigate } from 'react-router-dom';
-import { useCookies, CookiesProvider } from "react-cookie";
-import * as ENV from '../utils/Environment';
+import { useCookies } from "react-cookie";
 
 interface CardSet {
     code: string;
@@ -28,8 +19,13 @@ interface CardOption {
     id: string;
     name: string;
 }
-  
-const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+
+type AuctionFormProps = {
+    setSelectedImageUrl: string;
+    setSelectedCardCondition: string;
+    setPrice: string;
+}
+const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice } : AuctionFormProps) => {
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
