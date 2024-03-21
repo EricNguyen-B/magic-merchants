@@ -28,7 +28,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const corsOptions = {
-  origin: ["https://65fae124f7d0891107eb9b0a--magic-merchants.netlify.app", "http://localhost:5173"],
+  origin: ["https://65fb678dc9fa8837a618ba77--magic-merchants.netlify.app", 
+          "http://localhost:5173", /.*magic-merchants\.netlify\.app/],
   credentials: true
 }
 app.use(cors(corsOptions));
@@ -42,15 +43,15 @@ const stripe = new Stripe(process.env.STRIPE_API_KEY || '');
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data:any, socket: Socket) {
   try{
-    const {price, auction_id, buyer_email} = data;
+    const cookies = cookie.parse(socket.handshake.headers.cookie?? "");
+    const {price, auction_id} = data;
     const newBidId = uuid();
-    console.log(price, auction_id, buyer_email);
-    await db.run('INSERT INTO user_bid(id, buyer_email, auction_id, price) VALUES (?, ?, ?, ?)', [newBidId, buyer_email, auction_id, price]);
+    await db.run(`INSERT INTO user_bid(id, buyer_email, auction_id, price) 
+                  VALUES (?, ?, ?, ?)`, [newBidId, cookies["user_email"], auction_id, price]);
     io.to(auction_id).emit("recieved_bid", {bid_price: price}); 
     io.emit(`${auction_id}/recieved_bid`, {bid_price: price});
   }catch(error){
-    console.log(error);
-    console.log("Failed to send bid");
+    console.log("Failed to send bid:/n", error);
   }
 }
 
@@ -62,7 +63,7 @@ async function handleJoinRoomEvent(data: any, socket: Socket) {
     io.to(auction_id).emit("joined_room", {viewer_count: room?.size});
     io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
   } catch (error) {
-    console.log("Failed to join room");
+    console.log("Failed to join room:\n", error);
   }
 }
 
@@ -74,8 +75,7 @@ async function handleExitRoomEvent(data: any, socket: Socket) {
     io.to(auction_id).emit("exited_room", {viewer_count: room?.size});
     io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
   } catch (error) {
-    console.log(error)
-    console.log("Failed to exit room");
+    console.log("Failed to exit room:\n", error);
   }
 }
 async function handleViewerCountEvent(data: any, socket: Socket){
@@ -84,34 +84,34 @@ async function handleViewerCountEvent(data: any, socket: Socket){
     const room = io.sockets.adapter.rooms.get(auction_id);
     io.emit(`${auction_id}/view_count`, {viewer_count: room?.size});
   } catch (error) {
-    console.log(error)
-    console.log("Failed to count viewers");
+    console.log("Failed to count viewers:/n", error);
   }
 }
 
 async function handleSendMessageEvent(data: any, socket: Socket) {
   try {
-      const { text_message, auction_id, viewer_email} = data;
-      const newMessageId = uuid();
-      await db.run('INSERT INTO chat_messages (message_id, viewer_email, text_message, auction_id) VALUES (?, ?, ?, ?)', [newMessageId, viewer_email, text_message, auction_id]);
-      socket.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
+    const cookies = cookie.parse(socket.handshake.headers.cookie?? "");
+    const { text_message, auction_id, viewer_email} = data;
+    const newMessageId = uuid();
+    await db.run('INSERT INTO chat_messages (message_id, viewer_email, text_message, auction_id) VALUES (?, ?, ?, ?)', [newMessageId, viewer_email, text_message, auction_id]);
+    socket.to(auction_id).emit("received_message", { message_id: newMessageId, text_message, auction_id });
   } catch (error) {
-      console.log("Failed to send message", error);
+    console.log("Failed to send message", error);
   }
 }
 /**Websocket Middleware For Authentication**/
-io.use((socket, next) => {
-  authenicator.authorizeSocketConnection(socket, (error?: Error) => {
-    if (error){
-      console.error('Unauthorized socket connection:', error.message);
-      socket.disconnect(true);
-    }
-    else{
-      next();
-    }
-  })
-});
-
+// this is delaying the connection. either remove or improve its efficiency
+// io.use((socket, next) => {
+//   authenicator.authorizeSocketConnection(socket, (error?: Error) => {
+//     if (error){
+//       console.error('Unauthorized socket connection:', error.message);
+//       socket.disconnect(true);
+//     }
+//     else{
+//       next();
+//     }
+//   })
+// });
 
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => { 
@@ -136,7 +136,6 @@ app.post("/api/login", (req, res) => authenicator.login(req, res));
 app.post("/api/register", (req, res) => authenicator.register(req, res));
 app.post("/api/logout", (req, res) => authenicator.logout(req, res));
 app.get("/api/authCookie", authenicator.authorize, (req, res, next) => authenicator.privateAPI(req, res));
-// TO DO: resolve errors with useEffect hook checking active rooms on the main page
 app.get("/api/chat-history/:auctionId", async (req, res) => {
   try {
       const { auctionId } = req.params;
@@ -165,8 +164,9 @@ app.post("/api/add-auction", async (req, res) => {
       (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
+      const sellerEmail = req.cookies["user_email"];
       /**Validate Request Schema**/
-      const {sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl} = schemas.auctionSchema.parse(req.body);
+      const {dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl} = schemas.auctionSchema.parse(req.body);
       /**generate Auction ID**/
       const auctionID = uuid();
       /**Run Auction Query and Then Schedule Event**/
@@ -287,7 +287,7 @@ app.get("/api/get-cards/:setCode", async (req, res) => {
       const cards = data.cards.map((card: MTGCard) => ({
         id: card.id,
         name: card.name,
-        imageUrl: card.imageUrl
+        imageUrl: card.imageUrl 
       }));
       res.json(cards);
     } else {

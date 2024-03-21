@@ -10,6 +10,7 @@ import * as dotenv from 'dotenv';
 import * as schemas from "./schemas.js";
 import { Authenicator } from "./authenticators.js";
 import cookieParser from "cookie-parser";
+import cookie from "cookie";
 import { AuctionEventScheduler } from "./schedules.js";
 import Stripe from 'stripe';
 dotenv.config({ path: '../.env' });
@@ -38,10 +39,11 @@ const stripe = new Stripe(process.env.STRIPE_API_KEY || '');
 /**Websocket Event Handlers**/
 async function handleSendBidEvent(data, socket) {
     try {
-        const { price, auction_id, buyer_email } = data;
+        const cookies = cookie.parse(socket.handshake.headers.cookie ? socket.handshake.headers.cookie : "");
+        const { price, auction_id } = data;
         const newBidId = uuid();
-        console.log(price, auction_id, buyer_email);
-        await db.run('INSERT INTO user_bid(id, buyer_email, auction_id, price) VALUES (?, ?, ?, ?)', [newBidId, buyer_email, auction_id, price]);
+        await db.run(`INSERT INTO user_bid(id, buyer_email, auction_id, price) 
+                  VALUES (?, ?, ?, ?)`, [newBidId, cookies["user_email"], auction_id, price]);
         io.to(auction_id).emit("recieved_bid", { bid_price: price });
         io.emit(`${auction_id}/recieved_bid`, { bid_price: price });
     }
@@ -98,17 +100,18 @@ async function handleSendMessageEvent(data, socket) {
     }
 }
 /**Websocket Middleware For Authentication**/
-io.use((socket, next) => {
-    authenicator.authorizeSocketConnection(socket, (error) => {
-        if (error) {
-            console.error('Unauthorized socket connection:', error.message);
-            socket.disconnect(true);
-        }
-        else {
-            next();
-        }
-    });
-});
+// this is delaying the connection. either remove or improve its efficiency
+// io.use((socket, next) => {
+//   authenicator.authorizeSocketConnection(socket, (error?: Error) => {
+//     if (error){
+//       console.error('Unauthorized socket connection:', error.message);
+//       socket.disconnect(true);
+//     }
+//     else{
+//       next();
+//     }
+//   })
+// });
 /**Websocket Event Listeners**/
 io.on("connection", (socket) => {
     socket.on("joining_room", (data) => {
@@ -159,8 +162,10 @@ app.post("/api/add-auction", async (req, res) => {
       (id, seller_email, card_name, card_condition, date_start, date_end, min_bid_price, min_bid_increments, image_url) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     try {
+        const sellerEmail = req.cookies["user_email"];
+        console.log(sellerEmail);
         /**Validate Request Schema**/
-        const { sellerEmail, dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl } = schemas.auctionSchema.parse(req.body);
+        const { dateStart, dateEnd, cardName, cardCondition, minBidPrice, minBidIncrement, imageUrl } = schemas.auctionSchema.parse(req.body);
         /**generate Auction ID**/
         const auctionID = uuid();
         /**Run Auction Query and Then Schedule Event**/

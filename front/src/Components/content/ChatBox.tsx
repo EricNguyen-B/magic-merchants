@@ -12,7 +12,6 @@ interface Message {
 }
 
 const ChatBox= (room: Room) => {
-  const [cookies, setCookies] = useCookies(['user_email']);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -31,7 +30,7 @@ const ChatBox= (room: Room) => {
       type: 'user_message',
     };
     setMessages((prevMessages) => [...prevMessages, newMessageObj]);
-    socket?.emit('send_message', { text_message: newMessage, auction_id: room.id , viewer_id: cookies.user_email});
+    socket?.emit('send_message', { text_message: newMessage, auction_id: room.id});
     setNewMessage('');
   };
 

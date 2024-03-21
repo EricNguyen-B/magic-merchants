@@ -37,7 +37,6 @@ interface Props {
   
 const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
     const navigate = useNavigate();
-    const [cookies] = useCookies(['user_email']);
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
@@ -89,7 +88,6 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
         console.log("Submit Clicked");
         try{
             await axios.post(`${ENV.getServerURL()}/api/add-auction`, {
-                sellerEmail: cookies.user_email,
                 dateStart: startDateValue,
                 dateEnd: endDateValue,
                 cardName: selectedCard,
@@ -97,7 +95,7 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                 minBidPrice: minBidPriceValue,
                 minBidIncrement: minBidIncrementValue,
                 imageUrl: selectedImage
-            }).then(res => {
+            }, {withCredentials: true}).then(res => {
                 setStartDateValue(dayjs());
                 setEndDateValue(dayjs().add(1, "hour"));
                 setCardNameValue("");
@@ -105,7 +103,6 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                 setMinBidPriceValue(0);
                 setMinBidIncrementValue(0);
                 setSelectedImage("");
-
                 const room = {
                     dateStart: startDateValue,
                     dateEnd: endDateValue,

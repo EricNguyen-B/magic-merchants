@@ -27,21 +27,21 @@ export class Authenicator{
     }
     public authorize: RequestHandler = (req, res, next) => {
         let { token } = req.cookies;
-        console.log(this.tokenStorage);
         if (token === undefined || !this.tokenStorage.hasOwnProperty(token)) {
             return res.status(403).json({ message: "Unauthorized" });
         }
         next();
     };
-    public authorizeSocketConnection = (socket: Socket, next: (err?: Error) => void) => {
-        try {
-            const cookies = cookie.parse(socket.handshake.headers.cookie? socket.handshake.headers.cookie : "");
-            (this.tokenStorage[cookies["auth_token"]] === cookies["user_email"])? 
-                next(): next(new Error("Token Does Not Match"));
-        }catch(error){
-            next(new Error("Unexpected Error"));
-        }
-    }
+    // this is delaying the connection. either remove or improve its efficiency
+    // public authorizeSocketConnection = (socket: Socket, next: (err?: Error) => void) => {
+    //     try {
+    //         const cookies = cookie.parse(socket.handshake.headers.cookie? socket.handshake.headers.cookie : "");
+    //         (this.tokenStorage[cookies["auth_token"]] === cookies["user_email"])? 
+    //             next(): next(new Error("Token Does Not Match"));
+    //     }catch(error){
+    //         next(new Error("Unexpected Error"));
+    //     }
+    // }
     public privateAPI(req: Request, res: Response<types.MessageResponse>) {
         return res.json({ message: "Authentication Successful. Valid Cookie" });
     }

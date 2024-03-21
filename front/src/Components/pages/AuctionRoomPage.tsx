@@ -22,8 +22,7 @@ const AuctionRoom = () => {
   const [viewerCount, setViewerCount] = useState<number>(0);
 
   const handleSubmitBid = () => {
-    console.log(cookies.user_email);
-    socket?.emit("sending_bid", { price: parseInt(bidPrice), auction_id: room.id, buyer_email: cookies.user_email});
+    socket?.emit("sending_bid", { price: parseInt(bidPrice), auction_id: room.id});
   };
 
   useEffect(() => {
