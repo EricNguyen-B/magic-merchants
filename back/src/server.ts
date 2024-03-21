@@ -208,7 +208,6 @@ interface MTGSet {
   code: string;
   name: string;
 }
-
 interface MTGCard {
   id: string;
   name: string;
@@ -233,29 +232,6 @@ app.get("/api/get-sets", async (req, res) => {
   } catch (error) {
     console.error("Failed to get card sets", error);
     res.status(500).json({ error: "Failed to get card sets" });
-  }
-});
-app.post('/api/create-payment-intent', async (req, res) => {
-  const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
-  const { auctionId, email } = req.body; 
-  let highestBidder, highestBid = "";
-  try {
-      const max = await db.get(query, [auctionId]);
-      highestBidder = (max.rows.length > 0) ? max[0].highest_bid : "";
-      if (!highestBid) {
-        return res.status(400).send({ error: "No bids found for the auction." });
-      }
-      const paymentIntent = await stripe.paymentIntents.create({
-          amount: parseFloat(highestBid), 
-          currency: 'usd',
-          receipt_email: email,
-      });
-      res.send({
-          clientSecret: paymentIntent.client_secret,
-      });
-  } catch (error) {
-    console.error('Failed operation:', error);
-    res.status(400).send({ error: "Operation failed" });
   }
 });
 
@@ -296,6 +272,29 @@ app.get("/api/get-cards/:setCode", async (req, res) => {
   } catch (error) {
     console.error(`Failed to get cards for set ${setCode}`, error);
     res.status(500).json({ error: `Failed to get cards for set ${setCode}` });
+  }
+});
+app.post('/api/create-payment-intent', async (req, res) => {
+  const query = `SELECT MAX(price) AS highest_bid FROM user_bid WHERE auction_id = $1 GROUP BY auction_id`;
+  const { auctionId, email } = req.body; 
+  let highestBidder, highestBid = "";
+  try {
+      const max = await db.get(query, [auctionId]);
+      highestBidder = (max.rows.length > 0) ? max[0].highest_bid : "";
+      if (!highestBid) {
+        return res.status(400).send({ error: "No bids found for the auction." });
+      }
+      const paymentIntent = await stripe.paymentIntents.create({
+          amount: parseFloat(highestBid), 
+          currency: 'usd',
+          receipt_email: email,
+      });
+      res.send({
+          clientSecret: paymentIntent.client_secret,
+      });
+  } catch (error) {
+    console.error('Failed operation:', error);
+    res.status(400).send({ error: "Operation failed" });
   }
 });
 

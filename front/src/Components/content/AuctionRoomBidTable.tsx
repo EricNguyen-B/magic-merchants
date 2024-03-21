@@ -19,7 +19,6 @@ const BidHistoryTable = (room: Room) => {
 
   const checkBidHistory = async () => {
     const response = await axios.get(`${ENV.getServerURL()}/api/check-bid-history/${room.id}`);
-    console.log(response.data)
     setHistoricalBids(response.data);
   }
   useEffect(() => {

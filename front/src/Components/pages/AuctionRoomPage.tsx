@@ -10,10 +10,8 @@ import Navbar from "../common/Navbar";
 import { TextField, FormControl, Button, Grid } from '@mui/material';
 import '../../styles/HomePage.css';
 import dayjs from 'dayjs';
-import { useCookies } from 'react-cookie';
 
 const AuctionRoom = () => {
-    let [cookies, setCookies] = useCookies(['user_email']);
   const navigate = useNavigate();
   const socket = useContext(SocketContext).socket;
   const location = useLocation();
@@ -26,7 +24,6 @@ const AuctionRoom = () => {
   };
 
   useEffect(() => {
-    console.log(room);
     socket?.emit("joining_room", { auction_id: room.id });
     socket?.on("joined_room", (data) => { setViewerCount(data['viewer_count']); });
     socket?.on("exited_room", (data) => { setViewerCount(data['viewer_count']); });
@@ -46,10 +43,7 @@ const AuctionRoom = () => {
 //   }, [room.room_status]);
 
     return (
-
-
         <Grid container spacing={2} className="homepage-container" style={{ marginTop: '80px' }}>
-            
             <Grid container justifyContent="center" spacing={2}>
                 <Navbar />
                 <Grid item xs={12} md={8} lg={6}>

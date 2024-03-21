@@ -16,8 +16,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import SendIcon from '@mui/icons-material/Send';
 import { useNavigate } from 'react-router-dom';
-import { useCookies, CookiesProvider } from "react-cookie";
 import * as ENV from '../utils/Environment';
+import { Room } from '../../types';
 
 interface CardSet {
     code: string;
@@ -35,14 +35,14 @@ interface Props {
     setPrice: (price: number) => void;
 }
   
-const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+const SellerForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
     const navigate = useNavigate();
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
     const [selectedImage, setSelectedImage] = useState<string>("");
     const [cardOptions, setCardOptions] = useState<CardOption[]>([]);
-    const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs());
+    const [startDateValue, setStartDateValue] = useState<Dayjs | null>(dayjs().add(5, "minutes"));
     const [endDateValue, setEndDateValue] = useState<Dayjs | null>(dayjs().add(1, "hour"));
     const [cardNameValue, setCardNameValue] = useState<string>("");
     const [cardConditionValue, setCardConditionValue] = useState<string>("");
@@ -103,16 +103,8 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
                 setMinBidPriceValue(0);
                 setMinBidIncrementValue(0);
                 setSelectedImage("");
-                const room = {
-                    dateStart: startDateValue,
-                    dateEnd: endDateValue,
-                    cardName: cardNameValue,
-                    cardCondition: cardConditionValue,
-                    minBidPrice: minBidPriceValue,
-                    minBidIncrement: minBidIncrementValue,
-                    imageUrl: selectedImage
-                }
-                navigate(`/auction-room`, {state: room});
+                
+                navigate("/");
             });
         }catch(error){
             console.log(error);
@@ -261,4 +253,4 @@ const AuctionForm: React.FC<Props> = ({ setSelectedImageUrl, setSelectedCardCond
     )
 }
 
-export default AuctionForm;
+export default SellerForm;
