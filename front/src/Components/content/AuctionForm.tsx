@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { create } from 'zustand';
 import * as ENV from '../utils/Environment';
 import axios from "axios";
 import { TextField, Box, Button, Grid, InputLabel, InputAdornment, MenuItem, FormControl, Select, SelectChangeEvent } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import SendIcon from '@mui/icons-material/Send';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
@@ -25,6 +27,55 @@ type AuctionFormProps = {
     setSelectedCardCondition: string;
     setPrice: string;
 }
+
+interface CardState {
+    cards: number
+    increase: (by: number) => void,
+    selectedCard: string,
+    select: (by: string) => void,
+}
+
+const useCardStore = create<CardState>()((set) => ({
+    cards: 0,
+    increase: (by) => set((state) => ({ cards: state.cards + by })),
+    selectedCard: "Hello world",
+    select: (by) => set((state) => ({ selectedCard: state.selectedCard = by })),
+}))
+
+const CardCounter = () => {
+    const numCards = useCardStore((state) => {
+        console.log(state);
+        return state.cards;
+    });
+    return <h1>Number of Cards: {numCards}</h1>
+}
+
+const SelectedCard = () => {
+    const selectedCard = useCardStore((state) => state.selectedCard);
+    return <Typography>Selected Card: {selectedCard}</Typography>
+}
+
+const Controls = () => {
+    const increaseNumCards = useCardStore((state: CardState) => state.increase);
+    const selectCard = useCardStore((state: CardState) => state.select);
+    return (
+        <Grid>
+            <Button 
+                onClick={() => increaseNumCards(1)}
+                variant="contained"
+            >
+                One Up
+            </Button>
+            <Button
+                onClick={() => selectCard("Goodbye World")}
+                variant="contained"
+            >
+                Change String
+            </Button>
+        </Grid>
+    );
+}
+
 const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice } : AuctionFormProps) => {
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
@@ -139,6 +190,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
         setCardCondition(event.target.value);
         setSelectedCardCondition(event.target.value); // Update card condition in parent state
     };
+
     return (
         <Grid item xs={4}>
             <Box sx={{ bgcolor: '#474747', height: '80vh', borderRadius: 1, p: 3 }}>
@@ -229,7 +281,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
                             onChange={(e) => {
                                 const newValue = parseInt(e.target.value, 10);
                                 setMinBidPriceValue(newValue);
-                                setPrice(newValue); // Update the price in the parent component as well
+                                setPrice(newValue); 
                             }}
                         />
                     </Grid>
@@ -252,6 +304,15 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
                             <Button onClick={handleFormSubmit} variant="contained" endIcon={<SendIcon />}>
                                 Create Room
                             </Button>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Box display="flex" justifyContent="flex-end">
+                            <Controls />
+                        </Box>
+                        <Box display="flex" justifyContent="flex-end">
+                            <CardCounter />
+                            <SelectedCard />
                         </Box>
                     </Grid>
                 </Grid>
