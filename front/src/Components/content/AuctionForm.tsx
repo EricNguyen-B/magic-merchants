@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { create } from 'zustand';
+import { useCardStore, CardState } from '../../stores/CardStore';
 import * as ENV from '../utils/Environment';
 import axios from "axios";
 import { TextField, Box, Button, Grid, InputLabel, InputAdornment, MenuItem, FormControl, Select, SelectChangeEvent } from '@mui/material';
@@ -28,26 +28,14 @@ type AuctionFormProps = {
     setPrice: string;
 }
 
-interface CardState {
-    cards: number
-    increase: (by: number) => void,
-    selectedCard: string,
-    select: (by: string) => void,
+const CardCounter = () => {
+    const numCards = useCardStore((state) => state.cards);
+    return <h1>Number of Cards: {numCards}</h1>
 }
 
-const useCardStore = create<CardState>()((set) => ({
-    cards: 0,
-    increase: (by) => set((state) => ({ cards: state.cards + by })),
-    selectedCard: "Hello world",
-    select: (by) => set((state) => ({ selectedCard: state.selectedCard = by })),
-}))
-
-const CardCounter = () => {
-    const numCards = useCardStore((state) => {
-        console.log(state);
-        return state.cards;
-    });
-    return <h1>Number of Cards: {numCards}</h1>
+const CardPrice = () => {
+    const cardPrice = useCardStore((state) => state.price);
+    return <Typography>Card Price: {cardPrice}</Typography>
 }
 
 const SelectedCard = () => {
@@ -58,6 +46,7 @@ const SelectedCard = () => {
 const Controls = () => {
     const increaseNumCards = useCardStore((state: CardState) => state.increase);
     const selectCard = useCardStore((state: CardState) => state.select);
+    const increasePrice = useCardStore((state: CardState) => state.price);
     return (
         <Grid>
             <Button 
@@ -65,6 +54,12 @@ const Controls = () => {
                 variant="contained"
             >
                 One Up
+            </Button>
+            <Button
+                onClick={() => selectCard("Goodbye World")}
+                variant="contained"
+            >
+                Change String
             </Button>
             <Button
                 onClick={() => selectCard("Goodbye World")}
