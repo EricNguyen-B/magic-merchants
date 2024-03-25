@@ -1,22 +1,47 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import { useCardStore, CardState } from '../../stores/CardStore';
+import { Box, Grid, Typography } from '@mui/material';
 import MTGCard from './MTGCard';
 
-const CardDescription = ({ imageUrl, cardCondition, price }) => {
+const CardPrice = () => {
+    const cardPrice = useCardStore((state: CardState) => state.price);
+    return <Typography variant="subtitle1" component="h2">Card Condition: {cardPrice}</Typography>
+}
+
+const AuctionPrice = () => {
+    const auctionPrice = useCardStore((state: CardState) => state.auctionPrice);
+    return <Typography variant="subtitle1" component="h2">Auction Price: {auctionPrice}</Typography>
+}
+
+const CardImage = () => {
+    const imageUrl = useCardStore((state: CardState) => state.imageUrl);
+    return <MTGCard imageUrl={imageUrl} />
+}
+
+const CardDescription = () => {
     return (
         <Grid item xs={3}>
-            <Box sx={{ bgcolor: '#474747', height: '60vh', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} >
-                <MTGCard imageUrl={imageUrl} />
-                <Grid container justifyContent="center" alignItems="center" spacing={1}>
+            <Box 
+                sx={{ 
+                    bgcolor: '#474747', 
+                    height: '60vh', 
+                    borderRadius: 1, 
+                    overflow: 'hidden', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                }}
+            >
+                <CardImage />
+                <Grid 
+                    container 
+                    justifyContent="center" 
+                    alignItems="center" 
+                    spacing={1}
+                >
                     <Grid item> 
-                        <Typography variant="subtitle1" component="h2" style={{ color: 'white'}}>
-                            Auction Price: {price}
-                        </Typography>
-                        <Typography variant="subtitle1" component="h2" style={{ color: 'white'}}>
-                            Card Condition: {cardCondition} 
-                        </Typography>
+                        <AuctionPrice />
+                        <CardPrice />
                     </Grid>
                 </Grid>
             </Box>

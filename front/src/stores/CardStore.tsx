@@ -5,9 +5,11 @@ interface Card {
     name: string;
 }
 
-interface CardState {
+export interface CardState {
     price: number;
     selectPrice: (by: number) => void;
+    auctionPrice: number;
+    selectAuctionPrice: (by: number) => void;
     cardOptions: Card[];
     selectOptions: (options: Card[]) => void;
     name: string;
@@ -23,11 +25,13 @@ interface CardState {
 export const useCardStore = create<CardState>()((set) => ({
     price: 0,
     selectPrice: (price) => set(() => ({ price })),
+    auctionPrice: 0,
+    selectAuctionPrice: (price) => set(() => ({ price })),
     cardOptions: [],
     selectOptions: (cardOptions) => set(() => ({ cardOptions })),
     name: "",
     selectName: (name) => set(() => ({ name })),
-    imageUrl: "",
+    imageUrl: 'https://i.imgur.com/LdOBU1I.jpg',
     selectImageUrl: (imageUrl) => set(() => ({ imageUrl })),
     set: "",
     selectSet: (setVal) => set(() => ({ set: setVal })),
