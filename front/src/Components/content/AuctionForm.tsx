@@ -1,23 +1,15 @@
-import * as React from "react";
 import { useEffect, useState } from 'react';
+import { useCardStore, CardState } from '../../stores/CardStore';
+import * as ENV from '../utils/Environment';
 import axios from "axios";
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Typography, TextField, Box, Button, Grid, InputLabel, InputAdornment, MenuItem, FormControl, Select, SelectChangeEvent } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import SendIcon from '@mui/icons-material/Send';
 import { useNavigate } from 'react-router-dom';
-import { useCookies, CookiesProvider } from "react-cookie";
-import * as ENV from '../utils/Environment';
+import { useCookies } from "react-cookie";
 
 interface CardSet {
     code: string;
@@ -26,10 +18,37 @@ interface CardSet {
   
 interface CardOption {
     id: string;
-    name: string;
+    cards: number;
 }
-  
-const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }) => {
+
+type AuctionFormProps = {
+    setSelectedImageUrl: string;
+    setSelectedCardCondition: string;
+    setPrice: string;
+}
+
+const AuctionPriceField = () => {
+    const auctionPrice = useCardStore((state: CardState) => state.auctionPrice);
+    const setPriceValue = useCardStore((state: CardState) => state.selectAuctionPrice);
+    return (
+        <TextField
+            required
+            id="min-bid-price"
+            label="Minimum Bid Price"
+            type="number"
+            fullWidth
+            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+            value={auctionPrice}
+            onChange={(e) => {
+                const newValue = parseInt(e.target.value, 10);
+                setPriceValue(newValue)
+            }}
+        />
+    )
+}
+
+
+const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice } : AuctionFormProps) => {
     const [cardSets, setCardSets] = useState<CardSet[]>([]);
     const [selectedSet, setSelectedSet] = useState<string>("");
     const [selectedCard, setSelectedCard] = useState<string>("");
@@ -143,24 +162,25 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
         setCardCondition(event.target.value);
         setSelectedCardCondition(event.target.value); // Update card condition in parent state
     };
+
     return (
         <Grid item xs={4}>
             <Box sx={{ bgcolor: '#474747', height: '80vh', borderRadius: 1, p: 3 }}>
                 <Grid container direction="column" spacing={2}> 
                     <Grid item>
                         <FormControl fullWidth sx={{ mt: 2 }}> 
-                        <InputLabel>Set Name</InputLabel>
-                        <Select
-                            value={selectedSet}
-                            label="Set Name"
-                            onChange={handleSetChange}
-                        >
-                            {Array.isArray(cardSets) && cardSets.map(set => (
-                                <MenuItem key={set.code} value={set.code}>
-                                    {set.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                            <InputLabel>Set Name</InputLabel>
+                            <Select
+                                value={selectedSet}
+                                label="Set Name"
+                                onChange={handleSetChange}
+                            >
+                                {Array.isArray(cardSets) && cardSets.map(set => (
+                                    <MenuItem key={set.code} value={set.code}>
+                                        {set.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         </FormControl>
                     </Grid>
                     <Grid item>
@@ -220,22 +240,7 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
                         </LocalizationProvider>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <TextField
-                            required
-                            id="min-bid-price"
-                            label="Minimum Bid Price"
-                            type="number"
-                            fullWidth
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                            }}
-                            value={minBidPriceValue}
-                            onChange={(e) => {
-                                const newValue = parseInt(e.target.value, 10);
-                                setMinBidPriceValue(newValue);
-                                setPrice(newValue); // Update the price in the parent component as well
-                            }}
-                        />
+                        <AuctionPriceField />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <TextField
@@ -256,6 +261,14 @@ const AuctionForm = ({ setSelectedImageUrl, setSelectedCardCondition, setPrice }
                             <Button onClick={handleFormSubmit} variant="contained" endIcon={<SendIcon />}>
                                 Create Room
                             </Button>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Box display="flex" justifyContent="flex-end">
+                            
+                        </Box>
+                        <Box display="flex" justifyContent="flex-end">
+                            
                         </Box>
                     </Grid>
                 </Grid>

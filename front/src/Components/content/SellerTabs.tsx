@@ -25,7 +25,7 @@ const SellerTabs = () => {
 const RoomContent = ({ setSelectedImageUrl, imageUrl, setSelectedCardCondition, cardCondition, setPrice, price }) => {
     return (
         <React.Fragment>
-            <CardDescription imageUrl={imageUrl} price={price} cardCondition={cardCondition} />
+            <CardDescription />
             <AuctionForm
                 setSelectedImageUrl={setSelectedImageUrl}
                 setSelectedCardCondition={setSelectedCardCondition}
